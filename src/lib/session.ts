@@ -2,7 +2,7 @@ import { getIronSession, IronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 
 export interface SessionData {
-    userId?: number;
+    userId?: string; // Supabase auth user id (UUID)
 }
 
 const sessionOptions = {

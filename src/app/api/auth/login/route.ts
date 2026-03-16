@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { checkPassword, getUserByUsername } from '@/lib/models';
+import { getUserById } from '@/lib/models';
 import { getSession } from '@/lib/session';
+import { supabase } from '@/lib/supabaseClient';
 
 export async function POST(request: Request) {
     try {
@@ -10,14 +11,18 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
         }
 
-        const valid = await checkPassword(username.trim(), password);
-        if (!valid) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: username.trim(),
+            password,
+        });
+
+        if (error || !data.user) {
             return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
         }
 
-        const user = await getUserByUsername(username.trim());
+        const user = await getUserById(data.user.id);
         if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 401 });
+            return NextResponse.json({ error: 'User profile not found' }, { status: 401 });
         }
 
         const session = await getSession();

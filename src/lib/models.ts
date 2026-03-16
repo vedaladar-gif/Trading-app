@@ -1,12 +1,11 @@
 import { supabase } from './supabaseClient';
-import bcrypt from 'bcryptjs';
 
 // ==========================================
 // Types
 // ==========================================
 
 export interface User {
-    id: number;
+    id: string; // Supabase auth user id (UUID)
     username: string;
     cash: number;
     created_at: string | null;
@@ -14,7 +13,7 @@ export interface User {
 
 export interface Trade {
     id: number;
-    user_id: number;
+    user_id: string;
     stock: string;
     shares: number;
     price: number;
@@ -31,7 +30,7 @@ export interface Holding {
 
 export interface ChatMessage {
     id: number;
-    user_id: number;
+    user_id: string;
     role: string;
     content: string;
     mode: string;
@@ -40,12 +39,12 @@ export interface ChatMessage {
 }
 
 // ==========================================
-// User Functions
+// User / Profile Functions
 // ==========================================
 
-export async function getUserById(userId: number): Promise<User | null> {
+export async function getUserById(userId: string): Promise<User | null> {
     const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, username, cash, created_at')
         .eq('id', userId)
         .maybeSingle();
@@ -58,7 +57,7 @@ export async function getUserById(userId: number): Promise<User | null> {
 
 export async function getUserByUsername(username: string): Promise<User | null> {
     const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, username, cash, created_at')
         .eq('username', username)
         .maybeSingle();
@@ -69,44 +68,28 @@ export async function getUserByUsername(username: string): Promise<User | null> 
     return (data as User | null) ?? null;
 }
 
-export async function createUser(username: string, password: string, startingCash: number): Promise<User | null> {
-    const hash = bcrypt.hashSync(password, 10);
+export async function createProfile(userId: string, username: string, startingCash: number): Promise<User | null> {
     const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .insert({
+            id: userId,
             username,
-            password: hash,
             cash: startingCash,
         })
         .select('id, username, cash, created_at')
         .maybeSingle();
 
     if (error) {
-        if ((error as any).code === '23505') {
-            // unique_violation
-            return null;
-        }
-        console.error('createUser error:', error);
+        console.error('createProfile error:', error);
         return null;
     }
 
     return data as User | null;
 }
 
-export async function checkPassword(username: string, password: string): Promise<boolean> {
-    const { data, error } = await supabase
-        .from('users')
-        .select('password')
-        .eq('username', username)
-        .maybeSingle<{ password: string }>();
-
-    if (error || !data) return false;
-    return bcrypt.compareSync(password, data.password);
-}
-
-export async function updateUserCash(userId: number, newCash: number): Promise<void> {
+export async function updateUserCash(userId: string, newCash: number): Promise<void> {
     const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ cash: newCash })
         .eq('id', userId);
     if (error) {
@@ -114,8 +97,9 @@ export async function updateUserCash(userId: number, newCash: number): Promise<v
     }
 }
 
-export async function deleteUserAccount(userId: number): Promise<boolean> {
-    const { error } = await supabase.from('users').delete().eq('id', userId);
+export async function deleteUserAccount(userId: string): Promise<boolean> {
+    // Deleting from auth.users will cascade to profiles (and related tables) via FK
+    const { error } = await supabase.auth.admin.deleteUser(userId);
     if (error) {
         console.error('deleteUserAccount error:', error);
         return false;
@@ -127,7 +111,7 @@ export async function deleteUserAccount(userId: number): Promise<boolean> {
 // Trade / Portfolio Functions
 // ==========================================
 
-export async function addTrade(userId: number, stock: string, shares: number, price: number, action: string): Promise<void> {
+export async function addTrade(userId: string, stock: string, shares: number, price: number, action: string): Promise<void> {
     const { error } = await supabase.from('portfolio').insert({
         user_id: userId,
         stock,
@@ -140,7 +124,7 @@ export async function addTrade(userId: number, stock: string, shares: number, pr
     }
 }
 
-export async function getUserTrades(userId: number): Promise<Trade[]> {
+export async function getUserTrades(userId: string): Promise<Trade[]> {
     const { data, error } = await supabase
         .from('portfolio')
         .select('*')
@@ -153,7 +137,7 @@ export async function getUserTrades(userId: number): Promise<Trade[]> {
     return (data as Trade[]) ?? [];
 }
 
-export async function getHoldings(userId: number): Promise<Holding[]> {
+export async function getHoldings(userId: string): Promise<Holding[]> {
     const { data, error } = await supabase
         .from('portfolio')
         .select('stock, shares, action')
@@ -175,9 +159,9 @@ export async function getHoldings(userId: number): Promise<Holding[]> {
         .map(([stock, shares]) => ({ stock, shares }));
 }
 
-export async function getUserCash(userId: number): Promise<number> {
+export async function getUserCash(userId: string): Promise<number> {
     const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('cash')
         .eq('id', userId)
         .maybeSingle<{ cash: number }>();
