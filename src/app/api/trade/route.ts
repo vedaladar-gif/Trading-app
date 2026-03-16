@@ -24,18 +24,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid trade parameters' }, { status: 400 });
     }
 
-    const currentCash = getUserCash(userId);
+    const currentCash = await getUserCash(userId);
     const tradeCost = quantity * price;
 
     if (action === 'SELL') {
-        const holdings = getHoldings(userId);
+        const holdings = await getHoldings(userId);
         const userShares = holdings.find(h => h.stock === ticker)?.shares || 0;
         if (userShares < quantity) {
             return NextResponse.json({ error: `Insufficient shares. You have ${userShares}` }, { status: 400 });
         }
         const newCash = currentCash + tradeCost;
-        addTrade(userId, ticker, quantity, price, action);
-        updateUserCash(userId, newCash);
+        await addTrade(userId, ticker, quantity, price, action);
+        await updateUserCash(userId, newCash);
         return NextResponse.json({
             success: true, action, ticker, quantity, price,
             cash_before: currentCash, cash_after: newCash,
@@ -45,8 +45,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `Insufficient cash. You have $${currentCash.toFixed(2)}` }, { status: 400 });
         }
         const newCash = currentCash - tradeCost;
-        addTrade(userId, ticker, quantity, price, action);
-        updateUserCash(userId, newCash);
+        await addTrade(userId, ticker, quantity, price, action);
+        await updateUserCash(userId, newCash);
         return NextResponse.json({
             success: true, action, ticker, quantity, price,
             cash_before: currentCash, cash_after: newCash,

@@ -1,4 +1,4 @@
-import { getDb } from './db';
+import { supabase } from './supabaseClient';
 import bcrypt from 'bcryptjs';
 
 // ==========================================
@@ -43,104 +43,182 @@ export interface ChatMessage {
 // User Functions
 // ==========================================
 
-export function getUserById(userId: number): User | null {
-    const db = getDb();
-    const row = db.prepare('SELECT id, username, cash, created_at FROM users WHERE id = ?').get(userId) as User | undefined;
-    return row || null;
+export async function getUserById(userId: number): Promise<User | null> {
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, username, cash, created_at')
+        .eq('id', userId)
+        .maybeSingle();
+    if (error) {
+        console.error('getUserById error:', error);
+        return null;
+    }
+    return (data as User | null) ?? null;
 }
 
-export function getUserByUsername(username: string): User | null {
-    const db = getDb();
-    const row = db.prepare('SELECT id, username, cash, created_at FROM users WHERE username = ?').get(username) as User | undefined;
-    return row || null;
+export async function getUserByUsername(username: string): Promise<User | null> {
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, username, cash, created_at')
+        .eq('username', username)
+        .maybeSingle();
+    if (error) {
+        console.error('getUserByUsername error:', error);
+        return null;
+    }
+    return (data as User | null) ?? null;
 }
 
-export function createUser(username: string, password: string, startingCash: number): User | null {
-    const db = getDb();
+export async function createUser(username: string, password: string, startingCash: number): Promise<User | null> {
     const hash = bcrypt.hashSync(password, 10);
-    try {
-        const result = db.prepare(
-            'INSERT INTO users (username, password, cash, created_at) VALUES (?, ?, ?, ?)'
-        ).run(username, hash, startingCash, new Date().toISOString());
-        return getUserById(result.lastInsertRowid as number);
-    } catch {
-        return null; // Username already taken (UNIQUE constraint)
+    const { data, error } = await supabase
+        .from('users')
+        .insert({
+            username,
+            password: hash,
+            cash: startingCash,
+        })
+        .select('id, username, cash, created_at')
+        .maybeSingle();
+
+    if (error) {
+        if ((error as any).code === '23505') {
+            // unique_violation
+            return null;
+        }
+        console.error('createUser error:', error);
+        return null;
+    }
+
+    return data as User | null;
+}
+
+export async function checkPassword(username: string, password: string): Promise<boolean> {
+    const { data, error } = await supabase
+        .from('users')
+        .select('password')
+        .eq('username', username)
+        .maybeSingle<{ password: string }>();
+
+    if (error || !data) return false;
+    return bcrypt.compareSync(password, data.password);
+}
+
+export async function updateUserCash(userId: number, newCash: number): Promise<void> {
+    const { error } = await supabase
+        .from('users')
+        .update({ cash: newCash })
+        .eq('id', userId);
+    if (error) {
+        console.error('updateUserCash error:', error);
     }
 }
 
-export function checkPassword(username: string, password: string): boolean {
-    const db = getDb();
-    const row = db.prepare('SELECT password FROM users WHERE username = ?').get(username) as { password: string } | undefined;
-    if (!row) return false;
-    return bcrypt.compareSync(password, row.password);
-}
-
-export function updateUserCash(userId: number, newCash: number): void {
-    const db = getDb();
-    db.prepare('UPDATE users SET cash = ? WHERE id = ?').run(newCash, userId);
-}
-
-export function deleteUserAccount(userId: number): boolean {
-    const db = getDb();
-    try {
-        const deleteAll = db.transaction(() => {
-            db.prepare('DELETE FROM chat_messages WHERE user_id = ?').run(userId);
-            db.prepare('DELETE FROM portfolio WHERE user_id = ?').run(userId);
-            db.prepare('DELETE FROM users WHERE id = ?').run(userId);
-        });
-        deleteAll();
-        return true;
-    } catch (e) {
-        console.error('Error deleting account:', e);
+export async function deleteUserAccount(userId: number): Promise<boolean> {
+    const { error } = await supabase.from('users').delete().eq('id', userId);
+    if (error) {
+        console.error('deleteUserAccount error:', error);
         return false;
     }
+    return true;
 }
 
 // ==========================================
 // Trade / Portfolio Functions
 // ==========================================
 
-export function addTrade(userId: number, stock: string, shares: number, price: number, action: string): void {
-    const db = getDb();
-    db.prepare(
-        'INSERT INTO portfolio (user_id, stock, shares, price, action, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(userId, stock, shares, price, action, new Date().toISOString());
+export async function addTrade(userId: number, stock: string, shares: number, price: number, action: string): Promise<void> {
+    const { error } = await supabase.from('portfolio').insert({
+        user_id: userId,
+        stock,
+        shares,
+        price,
+        action,
+    });
+    if (error) {
+        console.error('addTrade error:', error);
+    }
 }
 
-export function getUserTrades(userId: number): Trade[] {
-    const db = getDb();
-    return db.prepare('SELECT * FROM portfolio WHERE user_id = ? ORDER BY created_at DESC').all(userId) as Trade[];
+export async function getUserTrades(userId: number): Promise<Trade[]> {
+    const { data, error } = await supabase
+        .from('portfolio')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+    if (error) {
+        console.error('getUserTrades error:', error);
+        return [];
+    }
+    return (data as Trade[]) ?? [];
 }
 
-export function getHoldings(userId: number): Holding[] {
-    const db = getDb();
-    return db.prepare(`
-    SELECT stock, SUM(CASE WHEN action='BUY' THEN shares ELSE -shares END) as shares
-    FROM portfolio WHERE user_id = ? GROUP BY stock HAVING shares > 0
-  `).all(userId) as Holding[];
+export async function getHoldings(userId: number): Promise<Holding[]> {
+    const { data, error } = await supabase
+        .from('portfolio')
+        .select('stock, shares, action')
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('getHoldings error:', error);
+        return [];
+    }
+
+    const map = new Map<string, number>();
+    for (const row of data as { stock: string; shares: number; action: string }[]) {
+        const sign = row.action === 'BUY' ? 1 : -1;
+        map.set(row.stock, (map.get(row.stock) ?? 0) + sign * row.shares);
+    }
+
+    return Array.from(map.entries())
+        .filter(([, shares]) => shares > 0)
+        .map(([stock, shares]) => ({ stock, shares }));
 }
 
-export function getUserCash(userId: number): number {
-    const db = getDb();
-    const row = db.prepare('SELECT cash FROM users WHERE id = ?').get(userId) as { cash: number } | undefined;
-    return row?.cash ?? 0.0;
+export async function getUserCash(userId: number): Promise<number> {
+    const { data, error } = await supabase
+        .from('users')
+        .select('cash')
+        .eq('id', userId)
+        .maybeSingle<{ cash: number }>();
+    if (error || !data) return 0.0;
+    return data.cash ?? 0.0;
 }
 
 // ==========================================
 // Chat Functions
 // ==========================================
 
-export function addChatMessage(userId: number, role: string, content: string, mode: string, route?: string): void {
-    const db = getDb();
-    db.prepare(
-        'INSERT INTO chat_messages (user_id, role, content, mode, route, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(userId, role, content, mode, route || null, new Date().toISOString());
+export async function addChatMessage(userId: number, role: string, content: string, mode: string, route?: string): Promise<void> {
+    const { error } = await supabase.from('chat_messages').insert({
+        user_id: userId,
+        role,
+        content,
+        mode,
+        route: route || null,
+    });
+    if (error) {
+        console.error('addChatMessage error:', error);
+    }
 }
 
-export function getChatHistory(userId: number, mode: string, limit = 20): { role: string; content: string; created_at: string }[] {
-    const db = getDb();
-    const rows = db.prepare(
-        'SELECT role, content, created_at FROM chat_messages WHERE user_id = ? AND mode = ? ORDER BY created_at DESC LIMIT ?'
-    ).all(userId, mode, limit) as { role: string; content: string; created_at: string }[];
-    return rows.reverse();
+export async function getChatHistory(
+    userId: number,
+    mode: string,
+    limit = 20
+): Promise<{ role: string; content: string; created_at: string }[]> {
+    const { data, error } = await supabase
+        .from('chat_messages')
+        .select('role, content, created_at')
+        .eq('user_id', userId)
+        .eq('mode', mode)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+    if (error || !data) {
+        if (error) console.error('getChatHistory error:', error);
+        return [];
+    }
+
+    return (data as { role: string; content: string; created_at: string }[]).reverse();
 }

@@ -10,12 +10,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
         }
 
-        const valid = checkPassword(username.trim(), password);
+        const valid = await checkPassword(username.trim(), password);
         if (!valid) {
             return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
         }
 
-        const user = getUserByUsername(username.trim());
+        const user = await getUserByUsername(username.trim());
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 401 });
         }

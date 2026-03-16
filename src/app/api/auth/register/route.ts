@@ -10,7 +10,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
         }
 
-        const user = createUser(username.trim(), password.trim(), STARTING_CASH);
+        const user = await createUser(username.trim(), password.trim(), STARTING_CASH);
         if (!user) {
             return NextResponse.json({ error: 'Username already taken' }, { status: 400 });
         }

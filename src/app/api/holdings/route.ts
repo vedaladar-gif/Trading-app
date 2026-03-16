@@ -10,8 +10,8 @@ export async function GET() {
     }
 
     const userId = session.userId;
-    const cash = getUserCash(userId);
-    const holdings = getHoldings(userId);
+    const cash = await getUserCash(userId);
+    const holdings = await getHoldings(userId);
 
     // Enrich with current prices
     for (const h of holdings) {

@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Empty message' }, { status: 400 });
     }
 
-    addChatMessage(userId, 'user', userMessage, mode, route);
+    await addChatMessage(userId, 'user', userMessage, mode, route);
 
     let reply: string;
     if (mode === 'TRADING') {
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         reply = "I'm not sure what mode we're in. Please try again.";
     }
 
-    addChatMessage(userId, 'assistant', reply, mode, route);
+    await addChatMessage(userId, 'assistant', reply, mode, route);
     return NextResponse.json({ reply });
 }
 

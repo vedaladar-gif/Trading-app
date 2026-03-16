@@ -8,7 +8,7 @@ export async function POST() {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const success = deleteUserAccount(session.userId);
+    const success = await deleteUserAccount(session.userId);
     if (success) {
         session.destroy();
         return NextResponse.json({ success: true, message: 'Account deleted successfully' });
