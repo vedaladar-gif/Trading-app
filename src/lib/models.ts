@@ -173,7 +173,7 @@ export async function getUserCash(userId: string): Promise<number> {
 // Chat Functions
 // ==========================================
 
-export async function addChatMessage(userId: number, role: string, content: string, mode: string, route?: string): Promise<void> {
+export async function addChatMessage(userId: string, role: string, content: string, mode: string, route?: string): Promise<void> {
     const { error } = await supabase.from('chat_messages').insert({
         user_id: userId,
         role,
@@ -187,7 +187,7 @@ export async function addChatMessage(userId: number, role: string, content: stri
 }
 
 export async function getChatHistory(
-    userId: number,
+    userId: string,
     mode: string,
     limit = 20
 ): Promise<{ role: string; content: string; created_at: string }[]> {
