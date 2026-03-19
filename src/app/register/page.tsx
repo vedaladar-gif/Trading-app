@@ -44,12 +44,12 @@ export default function RegisterPage() {
             {success && <div className="alert alert-success">{success}</div>}
             <form onSubmit={handleSubmit}>
                 <label>
-                    Username
+                    Email
                     <input
                         type="text"
                         value={username}
                         onChange={e => setUsername(e.target.value)}
-                        placeholder="Choose a username"
+                        placeholder="you@example.com"
                         required
                     />
                 </label>

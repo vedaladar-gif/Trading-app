@@ -8,10 +8,10 @@ export async function POST(request: Request) {
         const { username, password } = await request.json();
 
         if (!username?.trim() || !password) {
-            return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
+            return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
         }
 
-        const email = username.trim();
+        const email = username.trim().toLowerCase();
 
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
@@ -19,7 +19,12 @@ export async function POST(request: Request) {
         });
 
         if (error || !data.user) {
-            return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+            console.error('Supabase signInWithPassword error:', error);
+            const message =
+                (error as any)?.message ||
+                (Array.isArray((error as any)?.reasons) && (error as any).reasons[0]?.message) ||
+                'Invalid email or password';
+            return NextResponse.json({ error: message }, { status: 401 });
         }
 
         let user = await getUserById(data.user.id);

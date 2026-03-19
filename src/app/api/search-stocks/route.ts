@@ -1,25 +1,41 @@
 import { NextResponse } from 'next/server';
-import { STOCKS } from '@/lib/stocks';
+import { STOCKS, STOCK_NAMES } from '@/lib/stocks';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
-    const query = (searchParams.get('q') || '').toUpperCase().trim();
+    const raw = (searchParams.get('q') || '').trim();
+    const query = raw.toUpperCase();
 
     if (!query || query.length < 1) {
         return NextResponse.json({ results: [] }, { status: 400 });
     }
 
-    // Filter stocks containing the query, display-friendly (BTC not BTC-USD)
+    // Build a list of symbols and names
     const displayStocks = STOCKS.map(s => s.replace('-USD', ''));
     const uniqueStocks = [...new Set(displayStocks)];
 
-    const results = uniqueStocks.filter(s => s.includes(query));
+    const qLower = raw.toLowerCase();
 
-    // Sort: exact matches first, then starts with, then contains
-    const exact = results.filter(s => s === query);
-    const startsWith = results.filter(s => s.startsWith(query) && s !== query);
-    const contains = results.filter(s => !exact.includes(s) && !startsWith.includes(s));
+    // Match by symbol OR by human-friendly name
+    const matches = uniqueStocks.filter(sym => {
+        const name = STOCK_NAMES[sym] || '';
+        return (
+            sym.toUpperCase().includes(query) ||
+            name.toLowerCase().includes(qLower)
+        );
+    });
 
-    const sorted = [...exact, ...startsWith, ...contains].slice(0, 15);
+    // Sort: exact symbol, symbol startsWith, name startsWith, then contains
+    const exact = matches.filter(sym => sym.toUpperCase() === query);
+    const symStarts = matches.filter(sym => sym.toUpperCase().startsWith(query) && !exact.includes(sym));
+    const nameStarts = matches.filter(sym => {
+        const name = (STOCK_NAMES[sym] || '').toLowerCase();
+        return !exact.includes(sym) && !symStarts.includes(sym) && name.startsWith(qLower);
+    });
+    const contains = matches.filter(
+        sym => !exact.includes(sym) && !symStarts.includes(sym) && !nameStarts.includes(sym)
+    );
+
+    const sorted = [...exact, ...symStarts, ...nameStarts, ...contains].slice(0, 15);
     return NextResponse.json({ results: sorted });
 }

@@ -67,12 +67,12 @@ export default function LoginPage() {
             {info && <div className="alert alert-info">{info}</div>}
             <form onSubmit={handleSubmit}>
                 <label>
-                    Username
+                    Email
                     <input
                         type="text"
                         value={username}
                         onChange={e => setUsername(e.target.value)}
-                        placeholder="Enter your username"
+                        placeholder="you@example.com"
                         required
                     />
                 </label>
