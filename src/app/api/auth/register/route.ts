@@ -11,6 +11,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Username and password required' }, { status: 400 });
         }
 
+        if (password.trim().length < 6) {
+            return NextResponse.json({ error: 'Password must be at least 6 characters.' }, { status: 400 });
+        }
+
         // Use Supabase Auth as the source of truth
         const { data, error } = await supabase.auth.signUp({
             email: username.trim(),
@@ -19,7 +23,11 @@ export async function POST(request: Request) {
 
         if (error || !data.user) {
             console.error('Supabase signUp error:', error);
-            return NextResponse.json({ error: 'Registration failed' }, { status: 400 });
+            const message =
+                (error as any)?.message ||
+                (Array.isArray((error as any)?.reasons) && (error as any).reasons[0]?.message) ||
+                'Registration failed';
+            return NextResponse.json({ error: message }, { status: 400 });
         }
 
         const profile = await createProfile(data.user.id, username.trim(), STARTING_CASH);
