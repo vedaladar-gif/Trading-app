@@ -1,421 +1,297 @@
 .dashWrap {
     margin: -48px -24px 0;
     min-height: 100vh;
-    background: #0a1929;
+    background: #060810;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
-
 .dashNav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 24px;
-    background: linear-gradient(90deg, rgba(10, 25, 41, 0.98), rgba(26, 58, 82, 0.98));
-    border-bottom: 1px solid rgba(91, 132, 255, 0.15);
+    padding: 16px 32px;
+    background: rgba(6, 8, 16, 0.95);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
     position: sticky;
     top: 0;
     z-index: 100;
+    backdrop-filter: blur(20px);
 }
-
 .brand {
-    font-size: 20px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #5b84ff, #a855f7);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
     text-decoration: none;
+    letter-spacing: -0.5px;
 }
-
 .navLinks {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 4px;
 }
-
 .navLinks a {
-    color: #94a3b8;
+    color: #6b7280;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    transition: color 0.2s;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.2s;
 }
-
-.navLinks a:hover {
-    color: #5b84ff;
-}
-
+.navLinks a:hover { color: #fff; background: rgba(255,255,255,0.06); }
 .logoutBtn {
     background: none;
     border: none;
-    color: #fca5a5;
+    color: #6b7280;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    padding: 8px 14px;
+    padding: 8px 16px;
     font-family: inherit;
+    border-radius: 8px;
+    transition: all 0.2s;
 }
-
+.logoutBtn:hover { color: #f87171; background: rgba(248,113,113,0.08); }
 .dashGrid {
     display: grid;
-    grid-template-columns: 1fr 360px;
+    grid-template-columns: 1fr 340px;
     gap: 20px;
-    padding: 20px 24px;
+    padding: 24px 32px;
     max-width: 1600px;
     margin: 0 auto;
 }
-
-/* Chart */
 .chartPanel {
-    background: linear-gradient(135deg, #1e293b, #2a3a4f);
-    border-radius: 12px;
-    border: 1px solid rgba(91, 132, 255, 0.1);
+    background: #0d1117;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.07);
     overflow: hidden;
 }
-
 .chartHeader {
-    padding: 20px;
+    padding: 20px 24px;
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
     align-items: flex-start;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-
 .tickerInfo {
     display: flex;
     align-items: center;
     gap: 16px;
     flex-wrap: wrap;
 }
-
 .tickerInfo h2 {
     margin: 0;
-    font-size: 24px;
-    font-weight: 700;
-    color: #e6f0ff;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
 }
-
-.searchBox {
-    position: relative;
-}
-
+.searchBox { position: relative; }
 .searchInput {
-    padding: 8px 12px;
-    background: rgba(91, 132, 255, 0.08);
-    border: 1px solid rgba(91, 132, 255, 0.2);
-    border-radius: 6px;
-    color: #e2e8f0;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    color: #e8eaf0;
     font-size: 13px;
     width: 140px;
-    transition: all 0.3s;
+    transition: all 0.2s;
+    font-family: inherit;
 }
-
 .searchInput:focus {
     outline: none;
-    border-color: #5b84ff;
+    border-color: #4f6ef7;
     width: 180px;
-    box-shadow: 0 0 0 3px rgba(91, 132, 255, 0.15);
+    background: rgba(255,255,255,0.06);
 }
-
-.searchInput::placeholder {
-    color: #64748b;
-}
-
+.searchInput::placeholder { color: #374151; }
 .searchDropdown {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 4px);
     left: 0;
-    background: #1e293b;
-    border: 1px solid rgba(91, 132, 255, 0.2);
-    border-radius: 6px;
+    background: #0d1117;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
     max-height: 200px;
     overflow-y: auto;
     z-index: 50;
     min-width: 180px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
 }
-
 .searchItem {
     display: block;
     width: 100%;
     padding: 10px 14px;
     background: none;
     border: none;
-    color: #e2e8f0;
-    font-size: 14px;
+    color: #e8eaf0;
+    font-size: 13px;
     text-align: left;
     cursor: pointer;
     font-family: inherit;
     transition: background 0.2s;
 }
-
-.searchItem:hover {
-    background: rgba(91, 132, 255, 0.15);
-}
-
+.searchItem:hover { background: rgba(79,110,247,0.12); color: #7d9bff; }
 .priceDisplay {
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 20px;
-    font-weight: 700;
-    color: #e6f0ff;
+    font-weight: 800;
+    color: #fff;
     display: flex;
     align-items: center;
     gap: 8px;
+    letter-spacing: -0.5px;
 }
-
-.up {
-    color: #22c55e;
-    font-size: 14px;
-}
-
-.down {
-    color: #ef4444;
-    font-size: 14px;
-}
-
-.chartControls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
+.up { color: #4ade80; font-size: 13px; font-weight: 500; }
+.down { color: #f87171; font-size: 13px; font-weight: 500; }
+.chartControls { display: flex; gap: 8px; flex-wrap: wrap; }
 .chartTypeGroup {
     display: flex;
-    gap: 4px;
-    background: rgba(91, 132, 255, 0.05);
+    gap: 2px;
+    background: rgba(255,255,255,0.03);
     padding: 3px;
-    border-radius: 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
 }
-
 .ctrlBtn {
     padding: 6px 12px;
     border: none;
     background: transparent;
-    color: #94a3b8;
-    border-radius: 4px;
+    color: #4b5563;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
     transition: all 0.2s;
     font-family: inherit;
 }
-
-.ctrlBtn.active {
-    background: rgba(91, 132, 255, 0.2);
-    color: #5b84ff;
-}
-
-.ctrlBtn:hover {
-    color: #e2e8f0;
-}
-
-.chartArea {
-    height: 420px;
-    padding: 0 8px 8px;
-}
-
-/* Sidebar */
-.sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
+.ctrlBtn.active { background: rgba(79,110,247,0.15); color: #7d9bff; }
+.ctrlBtn:hover { color: #e8eaf0; }
+.chartArea { height: 460px; padding: 16px 8px 8px; }
+.sidebar { display: flex; flex-direction: column; gap: 12px; }
 .sideCard {
-    background: linear-gradient(135deg, #1e293b, #2a3a4f);
-    border-radius: 10px;
-    border: 1px solid rgba(91, 132, 255, 0.1);
-    padding: 16px;
+    background: #0d1117;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.07);
+    padding: 20px;
 }
-
 .sideCard h3 {
-    margin: 0 0 12px 0;
-    font-size: 15px;
-    font-weight: 600;
-    color: #e6f0ff;
+    margin: 0 0 16px 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.3px;
 }
-
-.portfolioGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
+.portfolioGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .portfolioItem {
-    padding: 12px;
-    background: rgba(91, 132, 255, 0.05);
-    border-radius: 6px;
+    padding: 14px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 10px;
     text-align: center;
 }
-
 .itemLabel {
     display: block;
-    font-size: 12px;
-    color: #94a3b8;
-    margin-bottom: 4px;
+    font-size: 11px;
+    color: #374151;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
-
 .itemValue {
     display: block;
-    font-size: 18px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
     font-weight: 700;
-    background: linear-gradient(135deg, #5b84ff, #a855f7);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #4f6ef7;
 }
-
-.tradeForm {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
+.tradeForm { display: flex; flex-direction: column; gap: 12px; }
 .tradeLabel {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: #94a3b8;
+    color: #4b5563;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
-
 .tradeInput {
-    padding: 10px 12px;
-    background: rgba(91, 132, 255, 0.08);
-    border: 1px solid rgba(91, 132, 255, 0.2);
-    border-radius: 6px;
-    color: #e2e8f0;
+    padding: 11px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px;
+    color: #e8eaf0;
     font-size: 15px;
+    font-family: inherit;
+    transition: all 0.2s;
 }
-
-.tradeInput:focus {
-    outline: none;
-    border-color: #5b84ff;
-    box-shadow: 0 0 0 3px rgba(91, 132, 255, 0.15);
-}
-
-.tradeTotal {
-    font-size: 14px;
-    color: #94a3b8;
-    text-align: right;
-}
-
+.tradeInput:focus { outline: none; border-color: #4f6ef7; background: rgba(79,110,247,0.05); }
+.tradeTotal { font-size: 13px; color: #4b5563; text-align: right; }
 .tradeTotal strong {
-    color: #e6f0ff;
+    color: #e8eaf0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 16px;
 }
-
-.tradeBtns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-}
-
-.buyBtn,
-.sellBtn {
-    padding: 12px;
+.tradeBtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.buyBtn, .sellBtn {
+    padding: 13px;
     border: none;
-    border-radius: 6px;
+    border-radius: 9px;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
+    letter-spacing: 0.5px;
 }
-
 .buyBtn {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: white;
+    background: rgba(34,197,94,0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.2);
 }
-
-.buyBtn:hover {
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
-    transform: translateY(-1px);
-}
-
+.buyBtn:hover { background: rgba(34,197,94,0.25); transform: translateY(-1px); }
 .sellBtn {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
+    background: rgba(239,68,68,0.12);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.2);
 }
-
-.sellBtn:hover {
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-    transform: translateY(-1px);
-}
-
-.tradeStatus {
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    text-align: center;
-}
-
-.tradeSuccess {
-    background: rgba(34, 197, 94, 0.1);
-    color: #86efac;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.tradeError {
-    background: rgba(239, 68, 68, 0.1);
-    color: #fca5a5;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.holdingsList {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
+.sellBtn:hover { background: rgba(239,68,68,0.22); transform: translateY(-1px); }
+.tradeStatus { padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: center; }
+.tradeSuccess { background: rgba(34,197,94,0.08); color: #4ade80; border: 1px solid rgba(34,197,94,0.15); }
+.tradeError { background: rgba(239,68,68,0.08); color: #f87171; border: 1px solid rgba(239,68,68,0.15); }
+.holdingsList { display: flex; flex-direction: column; gap: 2px; }
 .holdingRow {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 8px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 13px;
-    color: #cbd5e1;
+    color: #6b7280;
     cursor: pointer;
     transition: background 0.2s;
 }
-
-.holdingRow:hover {
-    background: rgba(91, 132, 255, 0.08);
-}
-
+.holdingRow:hover { background: rgba(255,255,255,0.04); color: #e8eaf0; }
 .holdingTicker {
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700;
-    color: #e6f0ff;
+    color: #e8eaf0;
+    font-size: 13px;
 }
-
-.holdingValue {
-    font-weight: 600;
-    color: #5b84ff;
-}
-
-.tradeBuy {
-    color: #22c55e;
-    font-weight: 700;
-}
-
-.tradeSell {
-    color: #ef4444;
-    font-weight: 700;
-}
-
+.holdingValue { font-weight: 600; color: #4f6ef7; }
+.tradeBuy { color: #4ade80; font-weight: 700; }
+.tradeSell { color: #f87171; font-weight: 700; }
 @media (max-width: 1024px) {
-    .dashGrid {
-        grid-template-columns: 1fr;
-    }
+    .dashGrid { grid-template-columns: 1fr; }
+    .dashNav { padding: 14px 20px; }
+    .dashGrid { padding: 16px 20px; }
 }
-
 @media (max-width: 640px) {
-    .dashNav {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .chartHeader {
-        flex-direction: column;
-    }
+    .dashNav { flex-direction: column; gap: 8px; }
+    .chartHeader { flex-direction: column; }
 }

@@ -17,7 +17,6 @@ export default function LoginPage() {
         setError('');
         setInfo('');
         setLoading(true);
-
         try {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
@@ -61,45 +60,133 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="form-container" style={{ marginTop: '80px' }}>
-            <h2>Login</h2>
-            {error && <div className="alert alert-error">{error}</div>}
-            {info && <div className="alert alert-info">{info}</div>}
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Email
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={e => setUsername(e.target.value)}
-                        placeholder="you@example.com"
-                        required
-                    />
-                </label>
-                <label>
-                    Password
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        required
-                    />
-                </label>
-                <button type="submit" className="btn" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
-                </button>
-            </form>
-            <button
-                type="button"
-                className="btn btn-secondary"
-                style={{ marginTop: '8px' }}
-                onClick={handleForgotPassword}
-                disabled={loading}
-            >
-                Forgot password?
-            </button>
-            <p>Don&apos;t have an account? <Link href="/register">Register</Link></p>
+        <div style={{
+            minHeight: '100vh',
+            background: '#060810',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'Inter, sans-serif',
+            margin: '-48px -24px 0',
+            padding: '24px',
+        }}>
+            <div style={{
+                width: '100%',
+                maxWidth: '420px',
+                background: '#0d1117',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: '20px',
+                padding: '40px',
+            }}>
+                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                    <div style={{
+                        width: '44px', height: '44px',
+                        background: 'linear-gradient(135deg, #4f6ef7, #9b5de5)',
+                        borderRadius: '12px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 16px',
+                        fontSize: '18px', color: '#fff', fontWeight: 700,
+                    }}>V</div>
+                    <h1 style={{
+                        fontSize: '22px', fontWeight: 700,
+                        color: '#fff', margin: '0 0 6px',
+                        letterSpacing: '-0.5px',
+                    }}>Welcome back</h1>
+                    <p style={{ fontSize: '14px', color: '#4b5563', margin: 0 }}>Sign in to your Vestera account</p>
+                </div>
+
+                {error && (
+                    <div style={{
+                        background: 'rgba(239,68,68,0.08)',
+                        border: '1px solid rgba(239,68,68,0.15)',
+                        borderRadius: '8px', padding: '12px 14px',
+                        marginBottom: '16px', fontSize: '13px', color: '#f87171',
+                    }}>{error}</div>
+                )}
+                {info && (
+                    <div style={{
+                        background: 'rgba(79,110,247,0.08)',
+                        border: '1px solid rgba(79,110,247,0.2)',
+                        borderRadius: '8px', padding: '12px 14px',
+                        marginBottom: '16px', fontSize: '13px', color: '#7d9bff',
+                    }}>{info}</div>
+                )}
+
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={e => setUsername(e.target.value)}
+                            placeholder="you@example.com"
+                            required
+                            style={{
+                                padding: '11px 14px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.07)',
+                                borderRadius: '9px',
+                                color: '#e8eaf0',
+                                fontSize: '14px',
+                                outline: 'none',
+                            }}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            required
+                            style={{
+                                padding: '11px 14px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.07)',
+                                borderRadius: '9px',
+                                color: '#e8eaf0',
+                                fontSize: '14px',
+                                outline: 'none',
+                            }}
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                            padding: '12px',
+                            background: '#4f6ef7',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            opacity: loading ? 0.7 : 1,
+                            marginTop: '4px',
+                        }}
+                    >{loading ? 'Signing in...' : 'Sign In'}</button>
+                </form>
+
+                <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    style={{
+                        width: '100%', marginTop: '10px', padding: '11px',
+                        background: 'none',
+                        border: '1px solid rgba(255,255,255,0.07)',
+                        borderRadius: '10px',
+                        color: '#4b5563', fontSize: '13px',
+                        cursor: 'pointer',
+                    }}
+                >Forgot password?</button>
+
+                <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: '#4b5563' }}>
+                    Don&apos;t have an account?{' '}
+                    <Link href="/register" style={{ color: '#4f6ef7', textDecoration: 'none', fontWeight: 600 }}>Create one</Link>
+                </p>
+            </div>
         </div>
     );
 }

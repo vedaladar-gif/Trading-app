@@ -20,6 +20,19 @@ interface HoldingEntry {
     value: number;
 }
 
+const getMarketStatus = () => {
+    const now = new Date();
+    const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const day = et.getDay();
+    const hours = et.getHours();
+    const minutes = et.getMinutes();
+    const time = hours * 60 + minutes;
+    if (day === 0 || day === 6) return { open: false, label: 'Market Closed', sub: 'Opens Monday 9:30 AM ET' };
+    if (time < 570) return { open: false, label: 'Market Closed', sub: 'Opens at 9:30 AM ET' };
+    if (time >= 570 && time < 960) return { open: true, label: 'Market Open', sub: 'Closes at 4:00 PM ET' };
+    return { open: false, label: 'Market Closed', sub: 'Opens tomorrow 9:30 AM ET' };
+};
+
 export default function TradingDashboard() {
     const [ticker, setTicker] = useState('AAPL');
     const [price, setPrice] = useState(0);
@@ -35,13 +48,14 @@ export default function TradingDashboard() {
     const [timeframe, setTimeframe] = useState('1M');
     const [statusMsg, setStatusMsg] = useState('');
     const [statusType, setStatusType] = useState<'success' | 'error'>('success');
+    const [chartReady, setChartReady] = useState(false);
     const chartRef = useRef<HTMLDivElement>(null);
     const chartInstanceRef = useRef<ReturnType<typeof import('lightweight-charts').createChart> | null>(null);
     const seriesRef = useRef<unknown>(null);
     const router = useRouter();
     const priceIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const marketStatus = getMarketStatus();
 
-    // Fetch price
     const fetchPrice = useCallback(async (sym: string) => {
         try {
             const res = await fetch(`/api/price/${sym}`);
@@ -53,7 +67,6 @@ export default function TradingDashboard() {
         } catch { /* ignore */ }
     }, [price]);
 
-    // Fetch holdings
     const fetchHoldings = useCallback(async () => {
         try {
             const res = await fetch('/api/holdings');
@@ -64,42 +77,67 @@ export default function TradingDashboard() {
         } catch { /* ignore */ }
     }, [router]);
 
-    // Chart library modules ref
     const lcRef = useRef<typeof import('lightweight-charts') | null>(null);
 
     // Init chart
     useEffect(() => {
         let mounted = true;
-        import('lightweight-charts').then((lc) => {
+        const initChart = async () => {
+            // Wait for DOM to be ready
+            await new Promise(resolve => setTimeout(resolve, 100));
             if (!mounted || !chartRef.current) return;
+
+            const lc = await import('lightweight-charts');
+            if (!mounted || !chartRef.current) return;
+
             lcRef.current = lc;
-            if (chartInstanceRef.current) chartInstanceRef.current.remove();
+            if (chartInstanceRef.current) {
+                chartInstanceRef.current.remove();
+                chartInstanceRef.current = null;
+            }
 
             const chart = lc.createChart(chartRef.current, {
                 width: chartRef.current.clientWidth,
-                height: 420,
-                layout: { background: { type: lc.ColorType.Solid, color: 'transparent' }, textColor: '#94a3b8' },
-                grid: { vertLines: { color: 'rgba(91,132,255,0.06)' }, horzLines: { color: 'rgba(91,132,255,0.06)' } },
-                timeScale: { timeVisible: true, borderColor: 'rgba(91,132,255,0.1)' },
-                rightPriceScale: { borderColor: 'rgba(91,132,255,0.1)' },
+                height: chartRef.current.clientHeight || 460,
+                layout: {
+                    background: { type: lc.ColorType.Solid, color: 'transparent' },
+                    textColor: '#4b5563',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(255,255,255,0.03)' },
+                    horzLines: { color: 'rgba(255,255,255,0.03)' },
+                },
+                timeScale: {
+                    timeVisible: true,
+                    borderColor: 'rgba(255,255,255,0.05)',
+                },
+                rightPriceScale: {
+                    borderColor: 'rgba(255,255,255,0.05)',
+                },
                 crosshair: { mode: 0 },
             });
+
             chartInstanceRef.current = chart;
+
             const ro = new ResizeObserver(() => {
-                if (chartRef.current) chart.applyOptions({ width: chartRef.current.clientWidth });
+                if (chartRef.current && chartInstanceRef.current) {
+                    chartInstanceRef.current.applyOptions({ width: chartRef.current.clientWidth });
+                }
             });
             ro.observe(chartRef.current);
-        });
+            setChartReady(true);
+        };
+
+        initChart();
         return () => { mounted = false; };
     }, []);
 
-    // Update chart data when ticker or chartType changes — fetch REAL data
+    // Load chart data
     useEffect(() => {
-        if (!chartInstanceRef.current || !lcRef.current) return;
+        if (!chartReady || !chartInstanceRef.current || !lcRef.current) return;
         const chart = chartInstanceRef.current;
         const lc = lcRef.current;
 
-        // Remove old series
         if (seriesRef.current) {
             try { chart.removeSeries(seriesRef.current as Parameters<typeof chart.removeSeries>[0]); } catch { /* ignore */ }
             seriesRef.current = null;
@@ -107,7 +145,6 @@ export default function TradingDashboard() {
 
         const days = timeframe === '1W' ? 7 : timeframe === '1M' ? 30 : timeframe === '3M' ? 90 : 365;
 
-        // Fetch real historical data
         fetch(`/api/history/${ticker}?days=${days}`)
             .then(res => res.json())
             .then(data => {
@@ -116,46 +153,40 @@ export default function TradingDashboard() {
 
                 if (chartType === 'candlestick') {
                     const series = chart.addSeries(lc.CandlestickSeries, {
-                        upColor: '#22c55e', downColor: '#ef4444',
-                        borderUpColor: '#22c55e', borderDownColor: '#ef4444',
-                        wickUpColor: '#22c55e', wickDownColor: '#ef4444',
+                        upColor: '#4ade80', downColor: '#f87171',
+                        borderUpColor: '#4ade80', borderDownColor: '#f87171',
+                        wickUpColor: '#4ade80', wickDownColor: '#f87171',
                     });
-                    const chartData = bars.map(b => ({
-                        time: b.date,
-                        open: b.open,
-                        high: b.high,
-                        low: b.low,
-                        close: b.close,
-                    }));
-                    series.setData(chartData as Parameters<typeof series.setData>[0]);
+                    series.setData(bars.map(b => ({
+                        time: b.date, open: b.open, high: b.high, low: b.low, close: b.close,
+                    })) as Parameters<typeof series.setData>[0]);
                     seriesRef.current = series;
                 } else if (chartType === 'area') {
                     const series = chart.addSeries(lc.AreaSeries, {
-                        topColor: 'rgba(91, 132, 255, 0.4)', bottomColor: 'rgba(91, 132, 255, 0.02)',
-                        lineColor: '#5b84ff', lineWidth: 2,
+                        topColor: 'rgba(79,110,247,0.3)',
+                        bottomColor: 'rgba(79,110,247,0.02)',
+                        lineColor: '#4f6ef7',
+                        lineWidth: 2,
                     });
-                    const chartData = bars.map(b => ({
-                        time: b.date,
-                        value: b.close,
-                    }));
-                    series.setData(chartData as Parameters<typeof series.setData>[0]);
+                    series.setData(bars.map(b => ({
+                        time: b.date, value: b.close,
+                    })) as Parameters<typeof series.setData>[0]);
                     seriesRef.current = series;
                 } else {
-                    const series = chart.addSeries(lc.LineSeries, { color: '#a855f7', lineWidth: 2 });
-                    const chartData = bars.map(b => ({
-                        time: b.date,
-                        value: b.close,
-                    }));
-                    series.setData(chartData as Parameters<typeof series.setData>[0]);
+                    const series = chart.addSeries(lc.LineSeries, {
+                        color: '#9b5de5', lineWidth: 2,
+                    });
+                    series.setData(bars.map(b => ({
+                        time: b.date, value: b.close,
+                    })) as Parameters<typeof series.setData>[0]);
                     seriesRef.current = series;
                 }
 
                 chart.timeScale().fitContent();
             })
             .catch(e => console.error('Chart data error:', e));
-    }, [ticker, chartType, timeframe]);
+    }, [ticker, chartType, timeframe, chartReady]);
 
-    // Fetch data on ticker change
     useEffect(() => {
         fetchPrice(ticker);
         fetchHoldings();
@@ -164,7 +195,6 @@ export default function TradingDashboard() {
         return () => { if (priceIntervalRef.current) clearInterval(priceIntervalRef.current); };
     }, [ticker, fetchPrice, fetchHoldings]);
 
-    // Search
     useEffect(() => {
         if (!searchQuery || searchQuery.length < 1) { setSearchResults([]); setShowSearch(false); return; }
         const t = setTimeout(async () => {
@@ -194,17 +224,20 @@ export default function TradingDashboard() {
             });
             const data = await res.json();
             if (data.success) {
-                setStatusMsg(`✅ ${action} ${quantity} ${ticker} @ $${price.toFixed(2)}`);
+                setStatusMsg(`${action} ${quantity} ${ticker} @ $${price.toFixed(2)}`);
                 setStatusType('success');
                 setCash(data.cash_after);
                 fetchHoldings();
-                setRecentTrades(prev => [{ stock: ticker, action, shares: quantity, price, created_at: new Date().toISOString() }, ...prev].slice(0, 10));
+                setRecentTrades(prev => [{
+                    stock: ticker, action, shares: quantity, price,
+                    created_at: new Date().toISOString()
+                }, ...prev].slice(0, 10));
             } else {
-                setStatusMsg(`❌ ${data.error}`);
+                setStatusMsg(data.error);
                 setStatusType('error');
             }
         } catch {
-            setStatusMsg('❌ Trade failed');
+            setStatusMsg('Trade failed');
             setStatusType('error');
         }
     };
@@ -218,19 +251,17 @@ export default function TradingDashboard() {
 
     return (
         <div className={styles.dashWrap}>
-            {/* Dashboard navbar */}
             <nav className={styles.dashNav}>
-                <Link href="/" className={styles.brand}>⚡ Vestera</Link>
+                <Link href="/" className={styles.brand}>Vestera</Link>
                 <div className={styles.navLinks}>
-                    <Link href="/trade">📊 Trade</Link>
-                    <Link href="/stats">📈 Stats</Link>
-                    <Link href="/learn">📚 Learn</Link>
+                    <Link href="/trade">Trade</Link>
+                    <Link href="/stats">Stats</Link>
+                    <Link href="/learn">Learn</Link>
                     <button onClick={handleLogout} className={styles.logoutBtn}>Logout</button>
                 </div>
             </nav>
 
             <div className={styles.dashGrid}>
-                {/* CHART AREA */}
                 <div className={styles.chartPanel}>
                     <div className={styles.chartHeader}>
                         <div className={styles.tickerInfo}>
@@ -257,19 +288,43 @@ export default function TradingDashboard() {
                                     {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}
                                 </span>
                             </span>
+                            {/* Market status badge */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                background: marketStatus.open ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)',
+                                border: `1px solid ${marketStatus.open ? 'rgba(74,222,128,0.2)' : 'rgba(248,113,113,0.2)'}`,
+                                borderRadius: '100px', padding: '4px 12px',
+                            }}>
+                                <div style={{
+                                    width: '6px', height: '6px', borderRadius: '50%',
+                                    background: marketStatus.open ? '#4ade80' : '#f87171',
+                                }} />
+                                <span style={{ fontSize: '12px', fontWeight: 600, color: marketStatus.open ? '#4ade80' : '#f87171' }}>
+                                    {marketStatus.label}
+                                </span>
+                                <span style={{ fontSize: '11px', color: '#374151' }}>· {marketStatus.sub}</span>
+                            </div>
                         </div>
 
                         <div className={styles.chartControls}>
                             <div className={styles.chartTypeGroup}>
                                 {(['area', 'candlestick', 'line'] as const).map(ct => (
-                                    <button key={ct} className={`${styles.ctrlBtn} ${chartType === ct ? styles.active : ''}`} onClick={() => setChartType(ct)}>
-                                        {ct === 'area' ? '📈' : ct === 'candlestick' ? '🕯️' : '📉'} {ct.charAt(0).toUpperCase() + ct.slice(1)}
+                                    <button
+                                        key={ct}
+                                        className={`${styles.ctrlBtn} ${chartType === ct ? styles.active : ''}`}
+                                        onClick={() => setChartType(ct)}
+                                    >
+                                        {ct.charAt(0).toUpperCase() + ct.slice(1)}
                                     </button>
                                 ))}
                             </div>
                             <div className={styles.chartTypeGroup}>
                                 {['1W', '1M', '3M', '1Y'].map(tf => (
-                                    <button key={tf} className={`${styles.ctrlBtn} ${timeframe === tf ? styles.active : ''}`} onClick={() => setTimeframe(tf)}>
+                                    <button
+                                        key={tf}
+                                        className={`${styles.ctrlBtn} ${timeframe === tf ? styles.active : ''}`}
+                                        onClick={() => setTimeframe(tf)}
+                                    >
                                         {tf}
                                     </button>
                                 ))}
@@ -280,30 +335,33 @@ export default function TradingDashboard() {
                     <div ref={chartRef} className={styles.chartArea} />
                 </div>
 
-                {/* SIDEBAR */}
                 <div className={styles.sidebar}>
-                    {/* Portfolio summary */}
                     <div className={styles.sideCard}>
-                        <h3>💼 Portfolio</h3>
+                        <h3>Portfolio</h3>
                         <div className={styles.portfolioGrid}>
                             <div className={styles.portfolioItem}>
                                 <span className={styles.itemLabel}>Cash</span>
-                                <span className={styles.itemValue}>${cash.toFixed(2)}</span>
+                                <span className={styles.itemValue}>${cash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div className={styles.portfolioItem}>
                                 <span className={styles.itemLabel}>Holdings</span>
-                                <span className={styles.itemValue}>${portfolioValue.toFixed(2)}</span>
+                                <span className={styles.itemValue}>${portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Buy/Sell panel */}
                     <div className={styles.sideCard}>
-                        <h3>📊 Trade {ticker}</h3>
+                        <h3>Trade {ticker}</h3>
                         <div className={styles.tradeForm}>
                             <label className={styles.tradeLabel}>
                                 Shares
-                                <input type="number" min="1" value={quantity} onChange={e => setQuantity(parseInt(e.target.value) || 1)} className={styles.tradeInput} />
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={quantity}
+                                    onChange={e => setQuantity(parseInt(e.target.value) || 1)}
+                                    className={styles.tradeInput}
+                                />
                             </label>
                             <div className={styles.tradeTotal}>
                                 Total: <strong>${(quantity * price).toFixed(2)}</strong>
@@ -320,10 +378,9 @@ export default function TradingDashboard() {
                         </div>
                     </div>
 
-                    {/* Holdings */}
                     {holdings.length > 0 && (
                         <div className={styles.sideCard}>
-                            <h3>📦 Holdings</h3>
+                            <h3>Holdings</h3>
                             <div className={styles.holdingsList}>
                                 {holdings.map(h => (
                                     <div key={h.stock} className={styles.holdingRow} onClick={() => selectStock(h.stock)}>
@@ -336,10 +393,9 @@ export default function TradingDashboard() {
                         </div>
                     )}
 
-                    {/* Recent trades */}
                     {recentTrades.length > 0 && (
                         <div className={styles.sideCard}>
-                            <h3>🕐 Recent</h3>
+                            <h3>Recent Trades</h3>
                             <div className={styles.holdingsList}>
                                 {recentTrades.slice(0, 5).map((t, i) => (
                                     <div key={i} className={styles.holdingRow}>
