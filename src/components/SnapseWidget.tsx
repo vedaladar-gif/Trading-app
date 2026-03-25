@@ -12,7 +12,7 @@ interface Message {
 export default function SnapseWidget() {
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: "👋 Hi! I'm **Snapse**, your AI investing companion. Ask me anything about trading, investing concepts, or market analysis!" }
+        { role: 'assistant', content: "Hi! I'm **Snapse**, your AI investing assistant. I can see your portfolio and help you analyze stocks, understand concepts, or answer any investing questions. What would you like to know?" }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -28,7 +28,6 @@ export default function SnapseWidget() {
 
     const sendMessage = async () => {
         if (!input.trim() || loading) return;
-
         const userMsg = input.trim();
         setInput('');
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
@@ -43,9 +42,11 @@ export default function SnapseWidget() {
             const data = await res.json();
             if (data.reply) {
                 setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+            } else {
+                setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong.' }]);
             }
         } catch {
-            setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: 'Network error. Please try again.' }]);
         }
         setLoading(false);
     };
@@ -56,17 +57,36 @@ export default function SnapseWidget() {
             .replace(/\n/g, '<br/>');
     };
 
+    const quickPrompts = isTrading
+        ? ['Analyze my portfolio', 'What should I buy?', 'Explain P/E ratio']
+        : ['Explain this simply', 'Give me an example', 'Quiz me'];
+
     return (
         <div className={styles.widget}>
-            <button className={`${styles.toggleBtn} ${open ? styles.active : ''}`} onClick={() => setOpen(!open)} title="Open Snapse AI Assistant">
-                💬
+            <button
+                className={`${styles.toggleBtn} ${open ? styles.active : ''}`}
+                onClick={() => setOpen(!open)}
+                title="Open Snapse AI"
+            >
+                {open ? '✕' : '💬'}
             </button>
 
             <div className={`${styles.panel} ${open ? styles.panelActive : ''}`}>
                 <div className={styles.header}>
-                    <div>
-                        <h3>Snapse</h3>
-                        <p className={styles.modeBadge}>{isTrading ? '📊 Trading' : '📚 Tutor'}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                            width: '32px', height: '32px',
+                            background: 'linear-gradient(135deg, #4f6ef7, #9b5de5)',
+                            borderRadius: '8px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '14px',
+                        }}>S</div>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#fff' }}>Snapse</h3>
+                            <p style={{ margin: 0, fontSize: '11px', color: '#4f6ef7' }}>
+                                {isTrading ? 'Portfolio AI' : 'Learning Tutor'}
+                            </p>
+                        </div>
                     </div>
                     <button className={styles.closeBtn} onClick={() => setOpen(false)}>✕</button>
                 </div>
@@ -91,6 +111,32 @@ export default function SnapseWidget() {
                     )}
                     <div ref={messagesEndRef} />
                 </div>
+
+                {/* Quick prompts */}
+                {messages.length <= 1 && (
+                    <div style={{
+                        padding: '8px 12px',
+                        display: 'flex', flexWrap: 'wrap', gap: '6px',
+                        borderTop: '1px solid rgba(255,255,255,0.05)',
+                    }}>
+                        {quickPrompts.map(p => (
+                            <button
+                                key={p}
+                                onClick={() => { setInput(p); }}
+                                style={{
+                                    padding: '5px 10px',
+                                    background: 'rgba(79,110,247,0.1)',
+                                    border: '1px solid rgba(79,110,247,0.2)',
+                                    borderRadius: '100px',
+                                    color: '#7d9bff',
+                                    fontSize: '11px',
+                                    cursor: 'pointer',
+                                    fontFamily: 'Inter, sans-serif',
+                                }}
+                            >{p}</button>
+                        ))}
+                    </div>
+                )}
 
                 <div className={styles.inputArea}>
                     <input

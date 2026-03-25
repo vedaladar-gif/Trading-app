@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LEVELS, type LessonUnit } from '@/lib/learningContent';
 import styles from './learn.module.css';
+import VLogo from '@/components/VLogo';
 
 interface Progress {
     [key: string]: { completed: boolean; quizScore?: number; quizPassed?: boolean };
@@ -84,11 +85,14 @@ export default function LearningDashboard() {
         <div className={styles.learnWrap}>
             {/* Nav */}
             <nav className={styles.learnNav}>
-                <Link href="/" className={styles.brand}>⚡ Vestera</Link>
+                <Link href="/" className={styles.brand}>
+                    <VLogo size={30} />
+                    Vestera
+                </Link>
                 <div className={styles.navLinks}>
-                    <Link href="/trade">📊 Trade</Link>
-                    <Link href="/stats">📈 Stats</Link>
-                    <Link href="/learn">📚 Learn</Link>
+                    <Link href="/trade">Trade</Link>
+                    <Link href="/stats">Stats</Link>
+                    <Link href="/learn">Learn</Link>
                     <button onClick={handleLogout} className={styles.logoutBtn}>Logout</button>
                 </div>
             </nav>
@@ -103,7 +107,7 @@ export default function LearningDashboard() {
                             onClick={() => { setActiveLevel(l.id); setActiveUnit(null); setShowQuiz(false); }}
                             style={activeLevel === l.id ? { borderColor: l.color } : {}}
                         >
-                            <span className={styles.tabEmoji}>{l.emoji}</span> {l.name}
+                            {l.name}
                         </button>
                     ))}
                 </div>
@@ -130,7 +134,7 @@ export default function LearningDashboard() {
                                 <div className={styles.unitContent} dangerouslySetInnerHTML={{ __html: formatContent(activeUnit.content) }} />
                                 {activeUnit.quiz.length > 0 && (
                                     <button className={styles.quizCta} onClick={startQuiz}>
-                                        🎯 Take the Quiz
+                                        Take the Quiz
                                     </button>
                                 )}
                             </>
@@ -160,7 +164,7 @@ export default function LearningDashboard() {
                                 </button>
                                 {quizResult && (
                                     <div className={`${styles.quizResultCard} ${quizResult.passed ? styles.quizPassed : styles.quizFailed}`}>
-                                        <h3>{quizResult.passed ? '🎉 Passed!' : '❌ Try Again'}</h3>
+                                        <h3>{quizResult.passed ? 'Passed!' : 'Try Again'}</h3>
                                         <p>Score: {quizResult.score}/{quizResult.total}</p>
                                         {!quizResult.passed && <button className={styles.retryBtn} onClick={startQuiz}>Retry Quiz</button>}
                                     </div>
@@ -178,8 +182,8 @@ export default function LearningDashboard() {
                                     <div className={styles.unitHeader}>
                                         <span className={styles.unitNumber}>Unit {unit.id}</span>
                                         <div className={styles.unitBadges}>
-                                            {p?.completed && <span className={styles.badgeDone}>✅</span>}
-                                            {p?.quizPassed && <span className={styles.badgeQuiz}>🎯</span>}
+                                            {p?.completed && <span className={styles.badgeDone}>Done</span>}
+                                            {p?.quizPassed && <span className={styles.badgeQuiz}>Passed</span>}
                                         </div>
                                     </div>
                                     <h4>{unit.title}</h4>

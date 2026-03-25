@@ -2,28 +2,62 @@
     margin: -48px -24px 0;
     min-height: 100vh;
     background: #060810;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
+    position: relative;
 }
+
+/* Ambient glow blobs — matches homepage aesthetic */
+.dashWrap::before {
+    content: '';
+    position: fixed;
+    top: -180px;
+    left: -120px;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(circle, rgba(79,110,247,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+.dashWrap::after {
+    content: '';
+    position: fixed;
+    bottom: -120px;
+    right: -80px;
+    width: 440px;
+    height: 440px;
+    background: radial-gradient(circle, rgba(155,93,229,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
 .dashNav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 32px;
-    background: rgba(6, 8, 16, 0.95);
+    padding: 0 32px;
+    height: 58px;
+    background: rgba(6, 8, 16, 0.9);
     border-bottom: 1px solid rgba(255,255,255,0.05);
     position: sticky;
     top: 0;
     z-index: 100;
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 .brand {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
     font-weight: 800;
     color: #fff;
     text-decoration: none;
     letter-spacing: -0.5px;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
 }
+.brand:hover { opacity: 0.8; }
 .navLinks {
     display: flex;
     align-items: center;
@@ -59,6 +93,8 @@
     padding: 24px 32px;
     max-width: 1600px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
 }
 .chartPanel {
     background: #0d1117;
@@ -83,7 +119,7 @@
 }
 .tickerInfo h2 {
     margin: 0;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 22px;
     font-weight: 800;
     color: #fff;
@@ -136,7 +172,7 @@
 }
 .searchItem:hover { background: rgba(79,110,247,0.12); color: #7d9bff; }
 .priceDisplay {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 20px;
     font-weight: 800;
     color: #fff;
@@ -180,7 +216,7 @@
 }
 .sideCard h3 {
     margin: 0 0 16px 0;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 700;
     color: #fff;
@@ -204,7 +240,7 @@
 }
 .itemValue {
     display: block;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 16px;
     font-weight: 700;
     color: #4f6ef7;
@@ -234,7 +270,7 @@
 .tradeTotal { font-size: 13px; color: #4b5563; text-align: right; }
 .tradeTotal strong {
     color: #e8eaf0;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 16px;
 }
 .tradeBtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -278,7 +314,7 @@
 }
 .holdingRow:hover { background: rgba(255,255,255,0.04); color: #e8eaf0; }
 .holdingTicker {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 700;
     color: #e8eaf0;
     font-size: 13px;

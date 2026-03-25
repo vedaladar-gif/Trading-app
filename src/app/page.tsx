@@ -1,19 +1,54 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
+import VLogo from '@/components/VLogo';
+
+/* ── display helpers ─────────────────────────────────────── */
+interface NvdaData {
+  price: number; change: number; changePct: number;
+  open: number; volume: number; high52w: number; marketCap: number;
+}
+interface TickerItem { sym: string; price: number; change: number; changePct: number; }
+
+const fmt$ = (n: number) => `$${n.toFixed(2)}`;
+const fmtVol = (n: number) => {
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`;
+  return String(n);
+};
+const fmtCap = (n: number) => {
+  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
+  if (n >= 1e9)  return `$${(n / 1e9).toFixed(1)}B`;
+  return `$${(n / 1e6).toFixed(0)}M`;
+};
 
 export default function Home() {
+  const router = useRouter();
+
+  // ── auth / portfolio state ───────────────────────────────────
   const [authenticated, setAuthenticated] = useState(false);
   const [portfolioData, setPortfolioData] = useState<{
-    pl: number;
-    pct: number;
-    cash: number;
-    portfolio_value: number;
+    pl: number; pct: number; cash: number; portfolio_value: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // ── real market data state ────────────────────────────────────
+  const [nvdaData, setNvdaData]   = useState<NvdaData | null>(null);
+  const [tickerData, setTickerData] = useState<TickerItem[]>([]);
+  const [priceColor, setPriceColor] = useState<string>('#fff');
+  const prevNvdaPrice = useRef<number>(0);
+
+  // Vestera Prototype Animation Add-on — ticker visibility state
+  const [tickerVisible, setTickerVisible] = useState(true);
+
+  // ── refs ─────────────────────────────────────────────────────
+  const heroRef = useRef<HTMLElement>(null);
+
+  // ── auth effect ──────────────────────────────────────────────
   useEffect(() => {
     fetch('/api/auth/me')
       .then(res => res.json())
@@ -28,15 +63,130 @@ export default function Home() {
       .catch(() => setLoading(false));
   }, []);
 
-  const pl = portfolioData?.pl ?? 0;
-  const pct = portfolioData?.pct ?? 0;
+  // ── real market data fetch ────────────────────────────────────
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchNvda = async () => {
+      try {
+        const res = await fetch('/api/quote/NVDA');
+        if (!res.ok || !mounted) return;
+        const data: NvdaData = await res.json();
+        if (prevNvdaPrice.current && data.price !== prevNvdaPrice.current) {
+          setPriceColor(data.price >= prevNvdaPrice.current ? '#4ade80' : '#f87171');
+          setTimeout(() => { if (mounted) setPriceColor('#fff'); }, 600);
+        }
+        prevNvdaPrice.current = data.price;
+        if (mounted) setNvdaData(data);
+      } catch { /* ignore */ }
+    };
+
+    const fetchTicker = async () => {
+      try {
+        const res = await fetch('/api/market-data');
+        if (!res.ok || !mounted) return;
+        const json = await res.json();
+        if (mounted) setTickerData(json.data ?? []);
+      } catch { /* ignore */ }
+    };
+
+    fetchNvda();
+    fetchTicker();
+    const nvdaInt   = setInterval(fetchNvda,   30_000);
+    const tickerInt = setInterval(fetchTicker, 60_000);
+
+    return () => {
+      mounted = false;
+      clearInterval(nvdaInt);
+      clearInterval(tickerInt);
+    };
+  }, []);
+
+  // ── animation effects ────────────────────────────────────────
+  useEffect(() => {
+    // Feature card scroll reveal (ctaCard handled separately below)
+    const revealEls = document.querySelectorAll(`.${styles.featureItem}`);
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el  = entry.target as HTMLElement;
+          const idx = Array.from(revealEls).indexOf(el);
+          el.style.animationDelay = (idx % 3) * 0.13 + 's';
+          el.classList.add(styles.visible);
+          revealObs.unobserve(el);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => revealObs.observe(el));
+
+    // Vestera Prototype Animation Add-on — hide ticker when hero exits viewport
+    const heroEl = heroRef.current;
+    const heroExitObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const scrolledPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+        setTickerVisible(!scrolledPast);
+      });
+    }, { threshold: 0 });
+    if (heroEl) heroExitObs.observe(heroEl);
+
+    return () => {
+      revealObs.disconnect();
+      heroExitObs.disconnect();
+    };
+  }, []);
+
+  // Runs after auth resolves so the CTA card is actually in the DOM
+  useEffect(() => {
+    if (loading || authenticated) return;
+    const ctaEl = document.querySelector(`.${styles.ctaCard}`) as HTMLElement | null;
+    if (!ctaEl) return;
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add(styles.visible);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    obs.observe(ctaEl);
+    return () => obs.disconnect();
+  }, [loading, authenticated]);
+
+  const pl   = portfolioData?.pl  ?? 0;
+  const pct  = portfolioData?.pct ?? 0;
   const isUp = pl >= 0;
 
   return (
     <div className={styles.wrap}>
 
-      {/* HERO */}
-      <section className={styles.hero}>
+      {/* Vestera Prototype Animation Add-on — scrolling stock ticker tape (real data) */}
+      <div className={`${styles.ticker}${tickerVisible ? '' : ' ' + styles.tickerHidden}`}>
+        {tickerData.length > 0 && (
+          <div className={styles.tickerInner}>
+            {/* items duplicated for a seamless infinite scroll loop */}
+            {[...tickerData, ...tickerData].map((s, i) => (
+              <span key={i} className={styles.tickerItem}>
+                <strong>{s.sym}</strong>
+                {fmt$(s.price)}{' '}
+                <span className={s.change >= 0 ? styles.tickerUp : styles.tickerDn}>
+                  {s.change >= 0 ? '+' : ''}{s.changePct.toFixed(2)}%
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Ambient background orbs ── */}
+      <div className={styles.bgOrbs} aria-hidden="true">
+        <div className={`${styles.orb} ${styles.orb1}`} />
+        <div className={`${styles.orb} ${styles.orb2}`} />
+        <div className={`${styles.orb} ${styles.orb3}`} />
+      </div>
+      <div className={styles.grain} aria-hidden="true" />
+
+      {/* ── HERO ── */}
+      <section className={styles.hero} ref={heroRef}>
         <div className={styles.heroLeft}>
           <div className={styles.heroEyebrow}>
             <span className={styles.eyebrowDot} />
@@ -69,21 +219,30 @@ export default function Home() {
           </div>
         </div>
 
-        {/* MOCK TRADING CARD */}
+        {/* ── MOCK TRADING CARD ── */}
         <div className={styles.heroRight}>
           <div className={styles.mockCard}>
             <div className={styles.mockHeader}>
               <div className={styles.mockTicker}>
-                <div className={styles.mockTickerIcon}>⚡</div>
+                <VLogo size={36} />
                 <div>
                   <div className={styles.mockTickerName}>NVDA</div>
                   <div className={styles.mockTickerSub}>NVIDIA Corp</div>
                 </div>
               </div>
-              <div className={styles.mockBadge}>Live</div>
+              <div className={styles.mockBadge}>● Live</div>
             </div>
-            <div className={styles.mockPrice}>$875.40</div>
-            <div className={styles.mockChange}>+$23.18 (+2.72%) today</div>
+            <div className={styles.mockPrice} style={{ color: priceColor }}>
+              {nvdaData ? fmt$(nvdaData.price) : '—'}
+            </div>
+            <div
+              className={styles.mockChange}
+              style={{ color: nvdaData && nvdaData.change >= 0 ? '#4ade80' : '#f87171' }}
+            >
+              {nvdaData
+                ? `${nvdaData.change >= 0 ? '+' : ''}${fmt$(nvdaData.change)} (${nvdaData.change >= 0 ? '+' : ''}${nvdaData.changePct.toFixed(2)}%) today`
+                : 'Loading…'}
+            </div>
             <div className={styles.mockChart}>
               <svg viewBox="0 0 300 80" preserveAspectRatio="none">
                 <defs>
@@ -99,25 +258,30 @@ export default function Home() {
             <div className={styles.mockGrid}>
               <div className={styles.mockGridItem}>
                 <span>Open</span>
-                <strong>$852.22</strong>
+                <strong>{nvdaData ? fmt$(nvdaData.open) : '—'}</strong>
               </div>
               <div className={styles.mockGridItem}>
                 <span>Volume</span>
-                <strong>42.3M</strong>
+                <strong>{nvdaData ? fmtVol(nvdaData.volume) : '—'}</strong>
               </div>
               <div className={styles.mockGridItem}>
                 <span>52W High</span>
-                <strong>$974.00</strong>
+                <strong>{nvdaData ? fmt$(nvdaData.high52w) : '—'}</strong>
               </div>
               <div className={styles.mockGridItem}>
                 <span>Mkt Cap</span>
-                <strong>$2.15T</strong>
+                <strong>{nvdaData ? fmtCap(nvdaData.marketCap) : '—'}</strong>
               </div>
             </div>
-            <button className={styles.mockBuyBtn}>Buy NVDA — Paper Trade</button>
+            <button
+              className={styles.mockBuyBtn}
+              onClick={() => router.push('/trade?ticker=NVDA')}
+            >
+              Buy NVDA — Paper Trade
+            </button>
           </div>
 
-          {/* PERSONALIZED PORTFOLIO BADGE — only shown when logged in */}
+          {/* Personalized badge when logged in */}
           {!loading && authenticated && portfolioData && (
             <div className={styles.floatingBadge}>
               <div className={styles.floatingBadgeIcon}>{isUp ? '📈' : '📉'}</div>
@@ -130,7 +294,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* Static badge for logged out users */}
+          {/* Static badge for logged-out users */}
           {!loading && !authenticated && (
             <div className={styles.floatingBadge}>
               <div className={styles.floatingBadgeIcon}>🚀</div>
@@ -143,7 +307,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURES */}
+      {/* ── FEATURES ── */}
       <section className={styles.features}>
         <div className={styles.sectionLabel}>Everything you need</div>
         <h2 className={styles.sectionTitle}>Built for serious learners</h2>
@@ -166,7 +330,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA — only shown when NOT logged in */}
+      {/* ── CTA — logged-out only ── */}
       {!loading && !authenticated && (
         <section className={styles.ctaSection}>
           <div className={styles.ctaCard}>
@@ -174,13 +338,13 @@ export default function Home() {
             <p className={styles.ctaSub}>Free forever. No credit card. No risk.</p>
             <div className={styles.ctaBtns}>
               <Link href="/register" className={styles.btnPrimary}>Create Free Account</Link>
-              <Link href="/login" className={styles.btnGhost}>Sign In →</Link>
+              <Link href="/login"    className={styles.btnGhost}>Sign In →</Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* FOOTER */}
+      {/* ── FOOTER ── */}
       <footer className={styles.footer}>
         <div className={styles.footerLogo}>Vestera</div>
         <div className={styles.footerText}>© 2026 Vestera · For educational purposes only. Not financial advice.</div>

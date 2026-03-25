@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vestera — Homepage Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset ── */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:#060810;
+  color:#e8eaf0;
+  overflow-x:hidden;
+}
+
+/* ── Animated background orbs ── */
+.bg-orbs{
+  position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
+}
+.orb{
+  position:absolute;border-radius:50%;filter:blur(80px);opacity:0.18;
+  animation:drift linear infinite;
+}
+.orb1{width:600px;height:600px;background:#4f6ef7;top:-200px;left:-100px;animation-duration:22s;}
+.orb2{width:500px;height:500px;background:#9b5de5;top:30%;right:-150px;animation-duration:28s;animation-direction:reverse;}
+.orb3{width:400px;height:400px;background:#4f6ef7;bottom:-100px;left:30%;animation-duration:18s;animation-delay:-5s;}
+@keyframes drift{
+  0%  {transform:translate(0,0) scale(1);}
+  33% {transform:translate(40px,-30px) scale(1.05);}
+  66% {transform:translate(-20px,50px) scale(0.97);}
+  100%{transform:translate(0,0) scale(1);}
+}
+
+/* ── Noise grain overlay ── */
+.grain{
+  position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.35;
+}
+
+/* wrap */
+.wrap{position:relative;z-index:2}
+
+/* ── Navbar ── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 48px;
+  background:rgba(6,8,16,0.7);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  /* start below the ticker (36px = ticker height) */
+  top: 36px;
+  transition: top 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s;
+  animation:navIn 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+/* when ticker hides, nav slides up flush to the top */
+.nav.at-top{
+  top: 0;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+}
+@keyframes navIn{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.navLogo{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:20px;
+  color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;
+  letter-spacing:-0.5px;
+}
+.navLogoMark{
+  width:28px;height:28px;
+  background:linear-gradient(135deg,#4f6ef7,#9b5de5);
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#fff;font-weight:800;
+}
+.navLinks{display:flex;align-items:center;gap:4px;}
+.navLink{
+  text-decoration:none;color:#6b7280;font-size:14px;font-weight:500;
+  padding:8px 16px;border-radius:8px;transition:all 0.2s;
+}
+.navLink:hover{color:#fff;background:rgba(255,255,255,0.06);}
+.navCta{
+  text-decoration:none;background:#fff;color:#060810;
+  font-size:14px;font-weight:600;padding:9px 20px;border-radius:8px;
+  margin-left:8px;transition:all 0.2s;
+}
+.navCta:hover{background:#e8eaf0;transform:translateY(-1px);}
+
+/* ── Hero ── */
+.hero{
+  padding:140px 48px 120px;
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;
+}
+
+/* Staggered fade-up for hero left children */
+.heroLeft>*{
+  opacity:0;
+  animation:fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+.heroLeft>:nth-child(1){animation-delay:0.2s}
+.heroLeft>:nth-child(2){animation-delay:0.35s}
+.heroLeft>:nth-child(3){animation-delay:0.5s}
+.heroLeft>:nth-child(4){animation-delay:0.65s}
+.heroLeft>:nth-child(5){animation-delay:0.8s}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.heroEyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(79,110,247,0.1);border:1px solid rgba(79,110,247,0.2);
+  color:#7d9bff;font-size:12px;font-weight:600;
+  letter-spacing:0.8px;text-transform:uppercase;
+  padding:6px 14px;border-radius:100px;margin-bottom:28px;
+}
+.eyebrowDot{
+  width:6px;height:6px;background:#4f6ef7;border-radius:50%;
+  display:inline-block;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(79,110,247,0.6)}50%{opacity:0.5;box-shadow:0 0 0 5px rgba(79,110,247,0)}}
+
+.heroTitle{
+  font-family:'Syne',sans-serif;font-size:68px;font-weight:800;
+  line-height:1.0;letter-spacing:-2.5px;margin:0 0 24px;color:#fff;
+}
+.heroTitleAccent{
+  background:linear-gradient(135deg,#4f6ef7 0%,#9b5de5 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+/* typing cursor on accent */
+.heroTitleAccent::after{
+  content:'|';
+  -webkit-text-fill-color:#7d9bff;
+  animation:blink 1s step-end infinite;
+  margin-left:2px;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.heroSub{font-size:18px;color:#4b5563;line-height:1.7;margin:0 0 40px;max-width:440px;}
+.heroBtns{display:flex;gap:12px;align-items:center;margin-bottom:56px;}
+.btnPrimary{
+  text-decoration:none;background:#4f6ef7;color:#fff;
+  font-size:15px;font-weight:600;padding:13px 28px;border-radius:10px;
+  transition:all 0.25s;position:relative;overflow:hidden;
+}
+/* shimmer sweep on primary button */
+.btnPrimary::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.2) 50%,transparent 60%);
+  transform:translateX(-100%);
+  transition:transform 0.5s;
+}
+.btnPrimary:hover::after{transform:translateX(100%);}
+.btnPrimary:hover{background:#3d5ce8;transform:translateY(-2px);box-shadow:0 8px 30px rgba(79,110,247,0.4);}
+.btnGhost{
+  text-decoration:none;color:#6b7280;font-size:15px;font-weight:500;
+  padding:13px 24px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);transition:all 0.25s;
+}
+.btnGhost:hover{color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);}
+
+.heroStats{display:flex;gap:40px;}
+.heroStat strong{
+  font-family:'Syne',sans-serif;font-size:28px;font-weight:800;
+  color:#fff;display:block;letter-spacing:-1px;
+}
+.heroStat span{font-size:13px;color:#374151;}
+
+/* ── Hero right — card entrance ── */
+.heroRight{
+  position:relative;
+  opacity:0;
+  animation:cardIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.4s both;
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(30px) scale(0.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* Gentle floating bob */
+.mockCard{
+  background:#0d1117;
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:20px;padding:28px;
+  box-shadow:0 40px 80px rgba(0,0,0,0.6);
+  position:relative;overflow:hidden;
+  animation:bob 5s ease-in-out infinite;
+}
+@keyframes bob{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+.mockCard::before{
+  content:'';position:absolute;top:-80px;right:-80px;
+  width:250px;height:250px;
+  background:radial-gradient(circle,rgba(79,110,247,0.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+.mockHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.mockTicker{display:flex;align-items:center;gap:10px;}
+.mockTickerIcon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,#4f6ef7,#9b5de5);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.mockTickerName{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:#fff;}
+.mockTickerSub{font-size:12px;color:#374151;}
+.mockBadge{
+  background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);
+  color:#4ade80;font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px;
+  /* pulse glow */
+  animation:badgePulse 2.5s ease-in-out infinite;
+}
+@keyframes badgePulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.3)}
+  50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}
+}
+
+.mockPrice{
+  font-family:'Syne',sans-serif;font-size:40px;font-weight:800;
+  color:#fff;letter-spacing:-2px;margin-bottom:4px;
+}
+.mockChange{font-size:13px;color:#4ade80;margin-bottom:20px;font-weight:500;}
+
+/* ── Animated chart line ── */
+.mockChart{height:80px;margin-bottom:20px;}
+.mockChart svg{width:100%;height:100%;}
+/* base state — hidden until observer adds .animate */
+.chartLine{
+  stroke:#4f6ef7;stroke-width:2;fill:none;
+  stroke-dasharray:600;stroke-dashoffset:600;
+  transition:none;
+}
+.chartFill{
+  fill:url(#chartGrad);
+  opacity:0;
+}
+/* observer adds this class to trigger the draw */
+.mockChart.animate .chartLine{
+  animation:drawLine 1.8s cubic-bezier(0.4,0,0.2,1) 0.15s forwards;
+}
+.mockChart.animate .chartFill{
+  animation:fillFade 0.7s ease 1.8s forwards;
+}
+@keyframes drawLine{to{stroke-dashoffset:0}}
+@keyframes fillFade{to{opacity:1}}
+
+.mockGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.mockGridItem{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:10px;padding:12px 14px;
+  transition:background 0.2s,border-color 0.2s;
+}
+.mockGridItem:hover{background:rgba(79,110,247,0.06);border-color:rgba(79,110,247,0.15);}
+.mockGridItem span{display:block;font-size:11px;color:#374151;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.mockGridItem strong{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#e8eaf0;}
+
+/* Buy button ripple */
+.mockBuyBtn{
+  width:100%;background:#4f6ef7;color:#fff;
+  border:none;padding:13px;border-radius:10px;
+  font-size:14px;font-weight:600;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background 0.2s,transform 0.15s;
+  position:relative;overflow:hidden;
+}
+.mockBuyBtn:hover{background:#3d5ce8;transform:translateY(-1px);}
+.mockBuyBtn:active{transform:translateY(1px);}
+.mockBuyBtn .ripple{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,0.25);
+  animation:ripple 0.6s linear;
+  pointer-events:none;
+}
+@keyframes ripple{
+  0%{width:0;height:0;opacity:0.6;transform:translate(-50%,-50%)}
+  100%{width:300px;height:300px;opacity:0;transform:translate(-50%,-50%)}
+}
+
+/* Floating badge — slow professional bob */
+.floatingBadge{
+  position:absolute;bottom:-16px;left:-20px;
+  background:#0d1117;border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.4);
+  animation:badgeFloat 4s ease-in-out 1.2s infinite;
+}
+@keyframes badgeFloat{
+  0%  {transform:translateY(0px)   rotate(0deg);}
+  30% {transform:translateY(-5px)  rotate(-0.4deg);}
+  60% {transform:translateY(-3px)  rotate(0.3deg);}
+  100%{transform:translateY(0px)   rotate(0deg);}
+}
+.floatingBadgeIcon{
+  width:32px;height:32px;background:rgba(34,197,94,0.12);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.floatingBadgeText strong{display:block;font-size:13px;font-weight:600;color:#fff;}
+.floatingBadgeText span{font-size:11px;color:#4ade80;}
+
+/* ── Features section ── */
+.features{padding:100px 48px;max-width:1200px;margin:0 auto;}
+.sectionLabel{font-size:12px;font-weight:600;color:#4f6ef7;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+.sectionTitle{
+  font-family:'Syne',sans-serif;font-size:46px;font-weight:800;
+  color:#fff;letter-spacing:-2px;line-height:1.1;margin:0 0 56px;
+}
+.featureGrid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:2px;background:rgba(255,255,255,0.04);
+  border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);
+}
+.featureItem{
+  background:#060810;padding:40px 32px;
+  transition:background 0.3s,transform 0.3s;
+  /* scroll reveal handled by JS */
+  opacity:0;transform:translateY(30px);
+}
+.featureItem.visible{
+  animation:featureIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes featureIn{
+  to{opacity:1;transform:translateY(0)}
+}
+.featureItem:hover{background:#0a0f1a;}
+
+/* icon glow on hover */
+.featureIcon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:20px;
+  transition:transform 0.3s,box-shadow 0.3s;
+}
+.featureItem:hover .featureIcon{transform:scale(1.15) rotate(-5deg);}
+.iconBlue{background:rgba(79,110,247,0.12);}
+.iconBlue:hover{box-shadow:0 0 20px rgba(79,110,247,0.3);}
+.iconPurple{background:rgba(155,93,229,0.12);}
+.iconGreen{background:rgba(34,197,94,0.1);}
+.featureItem h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#fff;margin:0 0 10px;}
+.featureItem p{font-size:14px;color:#374151;line-height:1.7;margin:0;}
+
+/* ── CTA ── */
+.ctaSection{padding:40px 48px 120px;max-width:1200px;margin:0 auto;}
+.ctaCard{
+  background:#0d1117;
+  border:1px solid rgba(79,110,247,0.15);
+  border-radius:24px;padding:80px;
+  text-align:center;position:relative;overflow:hidden;
+  /* scroll reveal */
+  opacity:0;transform:translateY(30px);
+}
+.ctaCard.visible{animation:featureIn 0.7s cubic-bezier(0.16,1,0.3,1) forwards;}
+.ctaCard::before{
+  content:'';
+  position:absolute;top:-100px;left:50%;transform:translateX(-50%);
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(79,110,247,0.1) 0%,transparent 70%);
+}
+.ctaTitle{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:#fff;letter-spacing:-2px;margin:0 0 14px;}
+.ctaSub{font-size:17px;color:#4b5563;margin:0 0 36px;}
+.ctaBtns{display:flex;gap:12px;justify-content:center;}
+
+/* ── Footer ── */
+.footer{
+  border-top:1px solid rgba(255,255,255,0.04);
+  padding:28px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1200px;margin:0 auto;
+}
+.footerLogo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:#1f2937;}
+.footerText{font-size:13px;color:#374151;}
+
+/* ── Ticker tape ── */
+.ticker{
+  background:rgba(79,110,247,0.06);
+  border-top:1px solid rgba(79,110,247,0.1);
+  border-bottom:1px solid rgba(79,110,247,0.1);
+  overflow:hidden;white-space:nowrap;padding:10px 0;
+  /* transition for scroll-hide */
+  transition: opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease;
+  max-height: 40px;
+  opacity: 1;
+  transform: translateY(0);
+}
+.ticker.hidden{
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+.tickerInner{
+  display:inline-flex;gap:56px;
+  animation:scroll 20s linear infinite;
+}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tickerItem{font-size:13px;font-weight:500;color:#6b7280;}
+.tickerItem .up{color:#4ade80;}
+.tickerItem .dn{color:#f87171;}
+.tickerItem strong{color:#e8eaf0;margin-right:6px;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:rgba(79,110,247,0.04)}
+::-webkit-scrollbar-thumb{background:rgba(79,110,247,0.25);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- Animated orbs -->
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+<div class="grain"></div>
+
+<!-- Ticker tape -->
+<div class="ticker" style="position:fixed;top:0;left:0;right:0;z-index:99">
+  <div class="tickerInner" id="ticker">
+    <span class="tickerItem"><strong>NVDA</strong> $875.40 <span class="up">+2.72%</span></span>
+    <span class="tickerItem"><strong>AAPL</strong> $193.12 <span class="up">+0.85%</span></span>
+    <span class="tickerItem"><strong>TSLA</strong> $248.50 <span class="dn">-1.23%</span></span>
+    <span class="tickerItem"><strong>MSFT</strong> $421.80 <span class="up">+1.44%</span></span>
+    <span class="tickerItem"><strong>AMZN</strong> $185.60 <span class="up">+0.67%</span></span>
+    <span class="tickerItem"><strong>GOOGL</strong> $162.44 <span class="dn">-0.31%</span></span>
+    <span class="tickerItem"><strong>META</strong> $502.20 <span class="up">+3.10%</span></span>
+    <span class="tickerItem"><strong>AMD</strong> $167.80 <span class="up">+1.95%</span></span>
+    <!-- duplicate for seamless loop -->
+    <span class="tickerItem"><strong>NVDA</strong> $875.40 <span class="up">+2.72%</span></span>
+    <span class="tickerItem"><strong>AAPL</strong> $193.12 <span class="up">+0.85%</span></span>
+    <span class="tickerItem"><strong>TSLA</strong> $248.50 <span class="dn">-1.23%</span></span>
+    <span class="tickerItem"><strong>MSFT</strong> $421.80 <span class="up">+1.44%</span></span>
+    <span class="tickerItem"><strong>AMZN</strong> $185.60 <span class="up">+0.67%</span></span>
+    <span class="tickerItem"><strong>GOOGL</strong> $162.44 <span class="dn">-0.31%</span></span>
+    <span class="tickerItem"><strong>META</strong> $502.20 <span class="up">+3.10%</span></span>
+    <span class="tickerItem"><strong>AMD</strong> $167.80 <span class="up">+1.95%</span></span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- NAVBAR -->
+  <nav class="nav">
+    <a href="#" class="navLogo">
+      <div class="navLogoMark">V</div>
+      Vestera
+    </a>
+    <div class="navLinks">
+      <a href="#" class="navLink">Trade</a>
+      <a href="#" class="navLink">Learn</a>
+      <a href="#" class="navLink">Stats</a>
+      <a href="#" class="navCta">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- HERO — extra top padding to clear ticker (36px) + navbar (72px) -->
+  <section class="hero" style="padding-top:180px">
+    <div class="heroLeft">
+
+      <div class="heroEyebrow">
+        <span class="eyebrowDot"></span>
+        Paper Trading Platform
+      </div>
+
+      <h1 class="heroTitle">
+        Trade smarter.<br/>
+        <span class="heroTitleAccent">Risk nothing.</span>
+      </h1>
+
+      <p class="heroSub">
+        Practice with real market data, AI-powered insights, and a $100K virtual portfolio. Learn the markets before you risk real money.
+      </p>
+
+      <div class="heroBtns">
+        <a href="#" class="btnPrimary">Launch Dashboard</a>
+        <a href="#" class="btnGhost">Browse Lessons →</a>
+      </div>
+
+      <div class="heroStats">
+        <div class="heroStat">
+          <strong id="stat1">0</strong>
+          <span>Real Stocks</span>
+        </div>
+        <div class="heroStat">
+          <strong id="stat2">$0K</strong>
+          <span>Starting Balance</span>
+        </div>
+        <div class="heroStat">
+          <strong id="stat3">0%</strong>
+          <span>Risk</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MOCK CARD -->
+    <div class="heroRight">
+      <div class="mockCard">
+        <div class="mockHeader">
+          <div class="mockTicker">
+            <div class="mockTickerIcon">⚡</div>
+            <div>
+              <div class="mockTickerName">NVDA</div>
+              <div class="mockTickerSub">NVIDIA Corp</div>
+            </div>
+          </div>
+          <div class="mockBadge">● Live</div>
+        </div>
+        <div class="mockPrice" id="livePrice">$875.40</div>
+        <div class="mockChange">+$23.18 (+2.72%) today</div>
+        <div class="mockChart">
+          <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4f6ef7" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#4f6ef7" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path class="chartFill" d="M0,65 L20,60 L40,55 L60,58 L80,45 L100,40 L120,35 L140,38 L160,25 L180,20 L200,22 L220,15 L240,18 L260,10 L280,8 L300,5 L300,80 L0,80 Z"/>
+            <path class="chartLine" d="M0,65 L20,60 L40,55 L60,58 L80,45 L100,40 L120,35 L140,38 L160,25 L180,20 L200,22 L220,15 L240,18 L260,10 L280,8 L300,5"/>
+          </svg>
+        </div>
+        <div class="mockGrid">
+          <div class="mockGridItem"><span>Open</span><strong>$852.22</strong></div>
+          <div class="mockGridItem"><span>Volume</span><strong>42.3M</strong></div>
+          <div class="mockGridItem"><span>52W High</span><strong>$974.00</strong></div>
+          <div class="mockGridItem"><span>Mkt Cap</span><strong>$2.15T</strong></div>
+        </div>
+        <button class="mockBuyBtn" id="buyBtn">Buy NVDA — Paper Trade</button>
+      </div>
+
+      <div class="floatingBadge">
+        <div class="floatingBadgeIcon">🚀</div>
+        <div class="floatingBadgeText">
+          <strong>Start with $100,000</strong>
+          <span>Zero risk. Real data.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="sectionLabel">Everything you need</div>
+    <h2 class="sectionTitle">Built for serious learners</h2>
+    <div class="featureGrid">
+      <div class="featureItem">
+        <div class="featureIcon iconBlue">📊</div>
+        <h3>Live Charts</h3>
+        <p>Candlestick, area, and line charts powered by real Yahoo Finance data. Multi-timeframe analysis just like the pros use.</p>
+      </div>
+      <div class="featureItem">
+        <div class="featureIcon iconPurple">🤖</div>
+        <h3>AI Stock Analyst</h3>
+        <p>Get entry and exit signals, risk assessments, and trade recommendations from an intelligent AI trading assistant.</p>
+      </div>
+      <div class="featureItem">
+        <div class="featureIcon iconGreen">🎓</div>
+        <h3>Learning Academy</h3>
+        <p>30+ lessons across beginner, intermediate, and advanced levels. Master technical analysis, risk management, and strategy.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="ctaSection">
+    <div class="ctaCard">
+      <h2 class="ctaTitle">Start trading today</h2>
+      <p class="ctaSub">Free forever. No credit card. No risk.</p>
+      <div class="ctaBtns">
+        <a href="#" class="btnPrimary">Create Free Account</a>
+        <a href="#" class="btnGhost">Sign In →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footerLogo">Vestera</div>
+    <div class="footerText">© 2026 Vestera · For educational purposes only. Not financial advice.</div>
+  </footer>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// 1. TICKER — hide once user leaves hero
+// ─────────────────────────────────────────
+const tickerEl = document.querySelector('.ticker');
+const navEl    = document.querySelector('.nav');
+const heroEl   = document.querySelector('.hero');
+let   tickerGone = false;
+
+// Use the hero section's bottom edge as the threshold
+const heroScrollObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const leaving = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+    if (leaving && !tickerGone) {
+      tickerEl.classList.add('hidden');
+      navEl.classList.add('at-top');
+      tickerGone = true;
+    } else if (!leaving && tickerGone) {
+      tickerEl.classList.remove('hidden');
+      navEl.classList.remove('at-top');
+      tickerGone = false;
+    }
+  });
+}, { threshold: 0 });
+heroScrollObserver.observe(heroEl);
+
+// ─────────────────────────────────────────
+// 2. STATS — count-up triggered by viewport
+// ─────────────────────────────────────────
+function runCounter(el, target, suffix, duration) {
+  if (el.dataset.counted) return;
+  el.dataset.counted = '1';
+  let startTime = null;
+  const step = (ts) => {
+    if (!startTime) startTime = ts;
+    const p    = Math.min((ts - startTime) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 4); // ease-out quart — fast start, gentle finish
+    el.textContent = Math.floor(ease * target) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = target + suffix; // snap to exact value
+  };
+  requestAnimationFrame(step);
+}
+
+function runDollarCounter(el, target, duration) {
+  if (el.dataset.counted) return;
+  el.dataset.counted = '1';
+  let startTime = null;
+  const step = (ts) => {
+    if (!startTime) startTime = ts;
+    const p    = Math.min((ts - startTime) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 4);
+    el.textContent = '$' + Math.floor(ease * target) + 'K';
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = '$' + target + 'K';
+  };
+  requestAnimationFrame(step);
+}
+
+const statsEl = document.querySelector('.heroStats');
+const statsObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      runCounter(document.getElementById('stat1'), 77, '+', 1400);
+      runDollarCounter(document.getElementById('stat2'), 100, 1600);
+      // stat3 is 0% — just snap it in with a label fade
+      const s3 = document.getElementById('stat3');
+      if (!s3.dataset.counted) { s3.dataset.counted='1'; s3.textContent='0%'; }
+      statsObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.6 }); // trigger when stats row is well into view
+statsObserver.observe(statsEl);
+
+// Set initial placeholder text so it doesn't show 0 before animation
+document.getElementById('stat1').textContent = '—';
+document.getElementById('stat2').textContent = '—';
+document.getElementById('stat3').textContent = '—';
+
+// ─────────────────────────────────────────
+// 3. SPARKLINE — draw on viewport entry
+// ─────────────────────────────────────────
+const chartEl = document.querySelector('.mockChart');
+const chartObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      // reset then re-trigger so animation replays if scrolled away and back
+      chartEl.classList.remove('animate');
+      void chartEl.offsetWidth; // force reflow
+      chartEl.classList.add('animate');
+      chartObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+chartObserver.observe(chartEl);
+
+// ─────────────────────────────────────────
+// 4. BUY BUTTON — ripple click effect
+// ─────────────────────────────────────────
+document.getElementById('buyBtn').addEventListener('click', function(e) {
+  const r    = document.createElement('span');
+  r.className = 'ripple';
+  const rect  = this.getBoundingClientRect();
+  r.style.left = (e.clientX - rect.left) + 'px';
+  r.style.top  = (e.clientY - rect.top)  + 'px';
+  this.appendChild(r);
+  setTimeout(() => r.remove(), 700);
+});
+
+// ─────────────────────────────────────────
+// 5. LIVE PRICE TICK
+// ─────────────────────────────────────────
+const priceEl = document.getElementById('livePrice');
+const prices  = ['$875.40','$875.62','$874.98','$876.11','$875.55'];
+let   pi = 0;
+setInterval(() => {
+  pi = (pi + 1) % prices.length;
+  const isUp = parseFloat(prices[pi]) >= parseFloat(prices[(pi - 1 + prices.length) % prices.length]);
+  priceEl.style.transition = 'color 0.25s';
+  priceEl.style.color = isUp ? '#4ade80' : '#f87171';
+  priceEl.textContent = prices[pi];
+  setTimeout(() => { priceEl.style.color = '#fff'; }, 600);
+}, 2800);
+
+// ─────────────────────────────────────────
+// 6. SCROLL REVEAL — features + CTA
+// ─────────────────────────────────────────
+const revealEls = document.querySelectorAll('.featureItem, .ctaCard');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const idx = Array.from(revealEls).indexOf(entry.target);
+      entry.target.style.animationDelay = (idx % 3) * 0.13 + 's';
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+revealEls.forEach(el => revealObserver.observe(el));
+</script>
+</body>
+</html>

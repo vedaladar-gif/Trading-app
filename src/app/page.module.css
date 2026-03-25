@@ -1,11 +1,101 @@
+/* ─────────────────────────────────────────────────────────────
+   WRAP
+───────────────────────────────────────────────────────────── */
 .wrap {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: #060810;
   min-height: 100vh;
   color: #e8eaf0;
   overflow-x: hidden;
   margin: -48px -24px 0;
+  position: relative;
+  z-index: 2;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   BACKGROUND ORBS
+───────────────────────────────────────────────────────────── */
+.bgOrbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  animation: drift linear infinite;
+}
+.orb1 { width: 600px; height: 600px; background: #4f6ef7; top: -200px; left: -100px; animation-duration: 22s; }
+.orb2 { width: 500px; height: 500px; background: #9b5de5; top: 30%; right: -150px; animation-duration: 28s; animation-direction: reverse; }
+.orb3 { width: 400px; height: 400px; background: #4f6ef7; bottom: -100px; left: 30%; animation-duration: 18s; animation-delay: -5s; }
+@keyframes drift {
+  0%   { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(40px,-30px) scale(1.05); }
+  66%  { transform: translate(-20px,50px) scale(0.97); }
+  100% { transform: translate(0,0) scale(1); }
+}
+
+/* Noise grain overlay */
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.35;
+}
+
+/* Vestera Prototype Animation Add-on — ticker tape */
+.ticker {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  background: rgba(79, 110, 247, 0.06);
+  border-bottom: 1px solid rgba(79, 110, 247, 0.12);
+  padding: 9px 0;
+  /* smooth collapse when hidden */
+  max-height: 42px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, max-height 0.4s ease, transform 0.4s ease, padding 0.4s ease;
+}
+.tickerHidden {
+  opacity: 0;
+  max-height: 0;
+  padding: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+.tickerInner {
+  display: inline-flex;
+  gap: 56px;
+  animation: tickerScroll 24s linear infinite;
+}
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.tickerItem {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+.tickerItem strong {
+  color: #e8eaf0;
+  margin-right: 6px;
+  font-weight: 600;
+}
+.tickerUp { color: #4ade80; }
+.tickerDn { color: #f87171; }
+
+/* ─────────────────────────────────────────────────────────────
+   NAV (legacy styles — actual nav is in Navbar.tsx / globals.css)
+───────────────────────────────────────────────────────────── */
 .nav {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -41,11 +131,7 @@
   color: #fff;
   font-weight: 800;
 }
-.navLinks {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.navLinks { display: flex; align-items: center; gap: 8px; }
 .navLink {
   text-decoration: none;
   color: #6b7280;
@@ -68,6 +154,10 @@
   margin-left: 8px;
 }
 .navCta:hover { background: #e8eaf0; transform: translateY(-1px); }
+
+/* ─────────────────────────────────────────────────────────────
+   HERO
+───────────────────────────────────────────────────────────── */
 .hero {
   padding: 120px 48px 120px;
   max-width: 1200px;
@@ -77,6 +167,23 @@
   gap: 80px;
   align-items: center;
 }
+
+/* staggered fade-up for every direct child of heroLeft */
+.heroLeft > * {
+  opacity: 0;
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.heroLeft > :nth-child(1) { animation-delay: 0.15s; }
+.heroLeft > :nth-child(2) { animation-delay: 0.30s; }
+.heroLeft > :nth-child(3) { animation-delay: 0.45s; }
+.heroLeft > :nth-child(4) { animation-delay: 0.60s; }
+.heroLeft > :nth-child(5) { animation-delay: 0.75s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .heroEyebrow {
   display: inline-flex;
   align-items: center;
@@ -101,9 +208,10 @@
   display: inline-block;
 }
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(79,110,247,0.6); }
+  50%       { opacity: 0.5; box-shadow: 0 0 0 5px rgba(79,110,247,0); }
 }
+
 .heroTitle {
   font-family: 'Syne', sans-serif;
   font-size: 68px;
@@ -119,6 +227,18 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+/* blinking cursor after the accent line */
+.heroTitleAccent::after {
+  content: '|';
+  -webkit-text-fill-color: #7d9bff;
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
 .heroSub {
   font-size: 18px;
   color: #4b5563;
@@ -141,7 +261,19 @@
   padding: 13px 28px;
   border-radius: 10px;
   transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
 }
+/* shimmer sweep */
+.btnPrimary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+.btnPrimary:hover::after { transform: translateX(100%); }
 .btnPrimary:hover {
   background: #3d5ce8;
   transform: translateY(-2px);
@@ -158,6 +290,7 @@
   transition: all 0.25s;
 }
 .btnGhost:hover { color: #fff; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+
 .heroStats { display: flex; gap: 40px; }
 .heroStat strong {
   font-family: 'Syne', sans-serif;
@@ -168,7 +301,23 @@
   letter-spacing: -1px;
 }
 .heroStat span { font-size: 13px; color: #374151; }
-.heroRight { position: relative; }
+
+/* ─────────────────────────────────────────────────────────────
+   HERO RIGHT — entrance + float
+───────────────────────────────────────────────────────────── */
+.heroRight {
+  position: relative;
+  opacity: 0;
+  animation: cardIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOCK TRADING CARD
+───────────────────────────────────────────────────────────── */
 .mockCard {
   background: #0d1117;
   border: 1px solid rgba(255,255,255,0.07);
@@ -177,6 +326,11 @@
   box-shadow: 0 40px 80px rgba(0,0,0,0.6);
   position: relative;
   overflow: hidden;
+  animation: bob 5s ease-in-out infinite;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
 }
 .mockCard::before {
   content: '';
@@ -186,47 +340,85 @@
   background: radial-gradient(circle, rgba(79,110,247,0.12) 0%, transparent 70%);
   pointer-events: none;
 }
+
 .mockHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .mockTicker { display: flex; align-items: center; gap: 10px; }
-.mockTickerIcon {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, #4f6ef7, #9b5de5);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-}
+/* .mockTickerIcon replaced by the shared VLogo component */
 .mockTickerName { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: #fff; }
-.mockTickerSub { font-size: 12px; color: #374151; }
+.mockTickerSub  { font-size: 12px; color: #374151; }
+
 .mockBadge {
   background: rgba(34,197,94,0.1);
   border: 1px solid rgba(34,197,94,0.2);
   color: #4ade80;
   font-size: 12px; font-weight: 600;
-  padding: 4px 10px; border-radius: 100px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  animation: badgePulse 2.5s ease-in-out infinite;
 }
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.3); }
+  50%       { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+
 .mockPrice {
   font-family: 'Syne', sans-serif;
   font-size: 40px; font-weight: 800;
-  color: #fff; letter-spacing: -2px; margin-bottom: 4px;
+  letter-spacing: -2px; margin-bottom: 4px;
+  transition: color 0.3s ease;
 }
 .mockChange { font-size: 13px; color: #4ade80; margin-bottom: 20px; font-weight: 500; }
+
+/* ─────────────────────────────────────────────────────────────
+   SPARKLINE CHART — observer-triggered draw
+───────────────────────────────────────────────────────────── */
 .mockChart { height: 80px; margin-bottom: 20px; }
 .mockChart svg { width: 100%; height: 100%; }
+
+/* base hidden state */
+.chartLine {
+  stroke: #4f6ef7;
+  stroke-width: 2;
+  fill: none;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+}
+.chartFill {
+  fill: url(#chartGrad);
+  opacity: 0;
+}
+/* .animate class is added by IntersectionObserver */
+.mockChart.animate .chartLine {
+  animation: drawLine 1.8s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
+}
+.mockChart.animate .chartFill {
+  animation: fillFade 0.7s ease 1.8s forwards;
+}
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes fillFade { to { opacity: 1; } }
+
 .mockGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
 .mockGridItem {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: 10px; padding: 12px 14px;
+  transition: background 0.2s, border-color 0.2s;
 }
-.mockGridItem span { display: block; font-size: 11px; color: #374151; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.mockGridItem:hover { background: rgba(79,110,247,0.06); border-color: rgba(79,110,247,0.15); }
+.mockGridItem span  { display: block; font-size: 11px; color: #374151; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 .mockGridItem strong { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: #e8eaf0; }
+
 .mockBuyBtn {
   width: 100%; background: #4f6ef7; color: #fff;
   border: none; padding: 13px; border-radius: 10px;
   font-size: 14px; font-weight: 600; cursor: pointer;
-  font-family: 'DM Sans', sans-serif; transition: background 0.2s;
+  font-family: 'DM Sans', sans-serif; transition: background 0.2s, transform 0.15s;
 }
-.mockBuyBtn:hover { background: #3d5ce8; }
+.mockBuyBtn:hover { background: #3d5ce8; transform: translateY(-1px); }
+
+/* ─────────────────────────────────────────────────────────────
+   FLOATING BADGE
+───────────────────────────────────────────────────────────── */
 .floatingBadge {
   position: absolute;
   bottom: -16px; left: -20px;
@@ -235,6 +427,13 @@
   border-radius: 12px; padding: 12px 16px;
   display: flex; align-items: center; gap: 10px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  animation: badgeFloat 4s ease-in-out 1.2s infinite;
+}
+@keyframes badgeFloat {
+  0%   { transform: translateY(0px)  rotate(0deg); }
+  30%  { transform: translateY(-5px) rotate(-0.4deg); }
+  60%  { transform: translateY(-3px) rotate(0.3deg); }
+  100% { transform: translateY(0px)  rotate(0deg); }
 }
 .floatingBadgeIcon {
   width: 32px; height: 32px;
@@ -244,9 +443,16 @@
   font-size: 14px;
 }
 .floatingBadgeText strong { display: block; font-size: 13px; font-weight: 600; color: #fff; }
-.floatingBadgeText span { font-size: 11px; color: #4ade80; }
+.floatingBadgeText span   { font-size: 11px; color: #4ade80; }
+
+/* ─────────────────────────────────────────────────────────────
+   FEATURES SECTION
+───────────────────────────────────────────────────────────── */
 .features { padding: 100px 48px; max-width: 1200px; margin: 0 auto; }
-.sectionLabel { font-size: 12px; font-weight: 600; color: #4f6ef7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+.sectionLabel {
+  font-size: 12px; font-weight: 600; color: #4f6ef7;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+}
 .sectionTitle {
   font-family: 'Syne', sans-serif;
   font-size: 46px; font-weight: 800;
@@ -260,20 +466,45 @@
   border-radius: 20px; overflow: hidden;
   border: 1px solid rgba(255,255,255,0.05);
 }
-.featureItem { background: #060810; padding: 40px 32px; transition: background 0.3s; }
+.featureItem {
+  background: #060810; padding: 40px 32px;
+  transition: background 0.3s;
+  /* hidden until scroll reveal */
+  opacity: 0;
+  transform: translateY(30px);
+}
+.featureItem.visible {
+  animation: featureIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes featureIn {
+  to { opacity: 1; transform: translateY(0); }
+}
 .featureItem:hover { background: #0a0f1a; }
-.featureIcon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 20px; }
-.iconBlue { background: rgba(79,110,247,0.12); }
+.featureIcon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 20px;
+  transition: transform 0.3s;
+}
+.featureItem:hover .featureIcon { transform: scale(1.15) rotate(-5deg); }
+.iconBlue   { background: rgba(79,110,247,0.12); }
 .iconPurple { background: rgba(155,93,229,0.12); }
-.iconGreen { background: rgba(34,197,94,0.1); }
+.iconGreen  { background: rgba(34,197,94,0.1); }
 .featureItem h3 { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: #fff; margin: 0 0 10px; }
-.featureItem p { font-size: 14px; color: #374151; line-height: 1.7; margin: 0; }
+.featureItem p  { font-size: 14px; color: #374151; line-height: 1.7; margin: 0; }
+
+/* ─────────────────────────────────────────────────────────────
+   CTA
+───────────────────────────────────────────────────────────── */
 .ctaSection { padding: 40px 48px 120px; max-width: 1200px; margin: 0 auto; }
 .ctaCard {
   background: #0d1117;
   border: 1px solid rgba(79,110,247,0.15);
   border-radius: 24px; padding: 80px;
   text-align: center; position: relative; overflow: hidden;
+  /* always visible — scroll-reveal handled via separate effect keyed on auth state */
+  opacity: 1; transform: translateY(0);
+  animation: featureIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .ctaCard::before {
   content: '';
@@ -282,8 +513,12 @@
   background: radial-gradient(circle, rgba(79,110,247,0.1) 0%, transparent 70%);
 }
 .ctaTitle { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; color: #fff; letter-spacing: -2px; margin: 0 0 14px; }
-.ctaSub { font-size: 17px; color: #4b5563; margin: 0 0 36px; }
-.ctaBtns { display: flex; gap: 12px; justify-content: center; }
+.ctaSub   { font-size: 17px; color: #4b5563; margin: 0 0 36px; }
+.ctaBtns  { display: flex; gap: 12px; justify-content: center; }
+
+/* ─────────────────────────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────────────────────────── */
 .footer {
   border-top: 1px solid rgba(255,255,255,0.04);
   padding: 28px 48px;
@@ -292,6 +527,10 @@
 }
 .footerLogo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: #1f2937; }
 .footerText { font-size: 13px; color: #374151; }
+
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .hero { grid-template-columns: 1fr; padding: 100px 24px 80px; gap: 48px; }
   .heroRight { display: none; }

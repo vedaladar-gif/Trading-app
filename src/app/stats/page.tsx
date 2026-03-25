@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import styles from './stats.module.css';
 
 interface HoldingEntry {
     stock: string;
@@ -53,18 +54,8 @@ export default function StatsPage() {
 
     if (loading) {
         return (
-            <div style={{
-                minHeight: '100vh', background: '#060810',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '-48px -24px 0', fontFamily: 'Inter, sans-serif',
-            }}>
-                <div style={{
-                    width: '32px', height: '32px',
-                    border: '2px solid rgba(79,110,247,0.15)',
-                    borderTopColor: '#4f6ef7',
-                    borderRadius: '50%',
-                    animation: 'spin 0.8s linear infinite',
-                }} />
+            <div className={styles.statsWrap} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className={styles.spinner} />
             </div>
         );
     }
@@ -74,14 +65,8 @@ export default function StatsPage() {
     const myRank = leaderboard.find(u => u.isCurrentUser)?.rank;
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: '#060810',
-            margin: '-48px -24px 0',
-            fontFamily: 'Inter, sans-serif',
-            padding: '48px 32px 80px',
-        }}>
-            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <div className={styles.statsWrap}>
+            <div className={styles.statsInner}>
 
                 {/* Header */}
                 <div style={{ marginBottom: '36px' }}>

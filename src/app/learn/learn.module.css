@@ -2,30 +2,63 @@
     margin: -48px -24px 0;
     min-height: 100vh;
     background: #060810;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+}
+
+/* Ambient glow blobs — matches homepage aesthetic */
+.learnWrap::before {
+    content: '';
+    position: fixed;
+    top: -180px;
+    left: -120px;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(circle, rgba(79,110,247,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+.learnWrap::after {
+    content: '';
+    position: fixed;
+    bottom: -120px;
+    right: -80px;
+    width: 440px;
+    height: 440px;
+    background: radial-gradient(circle, rgba(155,93,229,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 .learnNav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 32px;
-    background: rgba(6,8,16,0.95);
+    padding: 0 32px;
+    height: 58px;
+    background: rgba(6,8,16,0.9);
     border-bottom: 1px solid rgba(255,255,255,0.05);
     position: sticky;
     top: 0;
     z-index: 100;
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .brand {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
     font-weight: 800;
     color: #fff;
     text-decoration: none;
     letter-spacing: -0.5px;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
 }
+.brand:hover { opacity: 0.8; }
 
 .navLinks {
     display: flex;
@@ -64,6 +97,8 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 32px 32px;
+    position: relative;
+    z-index: 1;
 }
 
 .levelTabs {
@@ -83,9 +118,6 @@
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .levelTab:hover { background: rgba(255,255,255,0.06); color: #e8eaf0; }
@@ -96,7 +128,7 @@
     border-color: rgba(79,110,247,0.25) !important;
 }
 
-.tabEmoji { font-size: 16px; }
+.tabEmoji { display: none; }
 
 .progressCard {
     background: #0d1117;
@@ -164,10 +196,32 @@
 }
 
 .unitBadges { display: flex; gap: 4px; }
-.badgeDone, .badgeQuiz { font-size: 13px; }
+
+.badgeDone {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: #4ade80;
+    background: rgba(74,222,128,0.1);
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    text-transform: uppercase;
+}
+.badgeQuiz {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: #4f6ef7;
+    background: rgba(79,110,247,0.1);
+    border: 1px solid rgba(79,110,247,0.2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    text-transform: uppercase;
+}
 
 .unitCard h4 {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Inter', sans-serif;
     margin: 0 0 8px 0;
     font-size: 15px;
     font-weight: 700;
@@ -206,7 +260,7 @@
 .backBtn:hover { color: #7d9bff; }
 
 .unitViewer h2 {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Inter', sans-serif;
     margin: 0 0 24px 0;
     font-size: 26px;
     font-weight: 800;
@@ -244,7 +298,7 @@
 }
 
 .quizSection h2 {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Inter', sans-serif;
     margin: 0 0 28px 0;
     font-size: 22px;
     font-weight: 800;
@@ -333,7 +387,7 @@
 
 .quizResultCard h3 {
     margin: 0 0 8px 0;
-    font-family: 'Syne', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 20px;
     font-weight: 800;
     color: #fff;

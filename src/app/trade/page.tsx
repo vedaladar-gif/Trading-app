@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './trade.module.css';
+import VLogo from '@/components/VLogo';
 
 interface TradeEntry {
     stock: string;
@@ -55,6 +56,13 @@ export default function TradingDashboard() {
     const router = useRouter();
     const priceIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const marketStatus = getMarketStatus();
+
+    // Prefill ticker from ?ticker= URL param (e.g. from homepage "Buy NVDA" button)
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get('ticker');
+        if (t) setTicker(t.toUpperCase());
+    }, []);
 
     const fetchPrice = useCallback(async (sym: string) => {
         try {
@@ -252,7 +260,10 @@ export default function TradingDashboard() {
     return (
         <div className={styles.dashWrap}>
             <nav className={styles.dashNav}>
-                <Link href="/" className={styles.brand}>Vestera</Link>
+                <Link href="/" className={styles.brand}>
+                    <VLogo size={30} />
+                    Vestera
+                </Link>
                 <div className={styles.navLinks}>
                     <Link href="/trade">Trade</Link>
                     <Link href="/stats">Stats</Link>

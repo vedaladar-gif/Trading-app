@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import VLogo from './VLogo';
 
 export default function Navbar() {
     const [authenticated, setAuthenticated] = useState(false);
@@ -31,14 +32,15 @@ export default function Navbar() {
     return (
         <nav className="navbar">
             <Link href="/" className="nav-brand">
-                <span>⚡</span> Vestera
+                <VLogo size={30} />
+                Vestera
             </Link>
             <div className="nav-links">
                 {authenticated ? (
                     <>
-                        <Link href="/trade">📊 Trade</Link>
-                        <Link href="/stats">📈 Stats</Link>
-                        <Link href="/learn">📚 Learn</Link>
+                        <Link href="/trade">Trade</Link>
+                        <Link href="/stats">Stats</Link>
+                        <Link href="/learn">Learn</Link>
                         <button
                             onClick={handleLogout}
                             className="logout-link"

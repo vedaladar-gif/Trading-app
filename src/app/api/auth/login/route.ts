@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createProfile, getUserById } from '@/lib/models';
+import { getUserById } from '@/lib/models';
 import { getSession } from '@/lib/session';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, createAuthedClient } from '@/lib/supabaseClient';
+
+const STARTING_CASH = 100_000;
 
 export async function POST(request: Request) {
     try {
@@ -13,13 +15,10 @@ export async function POST(request: Request) {
 
         const email = username.trim().toLowerCase();
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error || !data.user) {
-            console.error('Supabase signInWithPassword error:', error);
+            console.error('signInWithPassword error:', error);
             const message =
                 (error as any)?.message ||
                 (Array.isArray((error as any)?.reasons) && (error as any).reasons[0]?.message) ||
@@ -28,12 +27,28 @@ export async function POST(request: Request) {
         }
 
         let user = await getUserById(data.user.id);
+
         if (!user) {
-            // Self-heal: create profile if missing (e.g., legacy accounts)
-            user = await createProfile(data.user.id, email, 0);
-            if (!user) {
-                return NextResponse.json({ error: 'User profile not found' }, { status: 401 });
+            // Profile is missing — create it now using the authenticated session so
+            // that RLS auth.uid() = id is satisfied without a service-role key.
+            const authedClient = createAuthedClient(data.session!.access_token);
+
+            const { data: profileData, error: profileError } = await authedClient
+                .from('profiles')
+                .insert({ id: data.user.id, username: email, cash: STARTING_CASH })
+                .select('id, username, cash, created_at')
+                .maybeSingle();
+
+            if (profileError) {
+                console.error('Self-heal createProfile error:', profileError);
+                return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 });
             }
+
+            user = profileData;
+        }
+
+        if (!user) {
+            return NextResponse.json({ error: 'User profile not found' }, { status: 401 });
         }
 
         const session = await getSession();

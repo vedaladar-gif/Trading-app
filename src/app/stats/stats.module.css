@@ -1,8 +1,61 @@
+/* Stats page wrapper — used in stats/page.tsx */
+.statsWrap {
+    min-height: 100vh;
+    background: #060810;
+    margin: -48px -24px 0;
+    font-family: 'Inter', sans-serif;
+    padding: 48px 32px 80px;
+    position: relative;
+}
+
+/* Ambient glow blobs — matches homepage aesthetic */
+.statsWrap::before {
+    content: '';
+    position: fixed;
+    top: -180px;
+    left: -120px;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(circle, rgba(79,110,247,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+.statsWrap::after {
+    content: '';
+    position: fixed;
+    bottom: -120px;
+    right: -80px;
+    width: 440px;
+    height: 440px;
+    background: radial-gradient(circle, rgba(155,93,229,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.statsInner {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Spinner for loading state */
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(79,110,247,0.15);
+    border-top-color: #4f6ef7;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Legacy classes kept to avoid breaking anything */
 .dashWrap {
     margin: -48px -24px 0;
     min-height: 100vh;
     background: #060810;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 .dashNav {
     display: flex;
