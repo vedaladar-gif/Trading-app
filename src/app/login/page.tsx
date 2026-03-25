@@ -156,17 +156,36 @@ export default function LoginPage() {
                         disabled={loading}
                         style={{
                             padding: '12px',
-                            background: '#4f6ef7',
+                            background: loading ? '#3d5ce8' : '#4f6ef7',
                             color: '#fff',
                             border: 'none',
                             borderRadius: '10px',
                             fontSize: '14px',
                             fontWeight: 600,
                             cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.7 : 1,
+                            opacity: loading ? 0.85 : 1,
                             marginTop: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            transition: 'background 0.2s, opacity 0.2s',
                         }}
-                    >{loading ? 'Signing in...' : 'Sign In'}</button>
+                    >
+                        {loading && (
+                            <span style={{
+                                width: '14px',
+                                height: '14px',
+                                border: '2px solid rgba(255,255,255,0.3)',
+                                borderTopColor: '#fff',
+                                borderRadius: '50%',
+                                display: 'inline-block',
+                                animation: 'spin 0.7s linear infinite',
+                                flexShrink: 0,
+                            }} />
+                        )}
+                        {loading ? 'Signing in…' : 'Sign In'}
+                    </button>
                 </form>
 
                 <button

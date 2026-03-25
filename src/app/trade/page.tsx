@@ -50,40 +50,64 @@ export default function TradingDashboard() {
     const [statusMsg, setStatusMsg] = useState('');
     const [statusType, setStatusType] = useState<'success' | 'error'>('success');
     const [chartReady, setChartReady] = useState(false);
+    // auth gate — data fetches only start once session is confirmed
+    const [authChecked, setAuthChecked] = useState(false);
     const chartRef = useRef<HTMLDivElement>(null);
     const chartInstanceRef = useRef<ReturnType<typeof import('lightweight-charts').createChart> | null>(null);
     const seriesRef = useRef<unknown>(null);
+    // Ref tracks previous price so fetchPrice doesn't need `price` in its deps
+    // (avoids the re-render loop: price change → fetchPrice recreated → effect re-fires)
+    const prevPriceRef = useRef(0);
     const router = useRouter();
     const priceIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const marketStatus = getMarketStatus();
 
-    // Prefill ticker from ?ticker= URL param (e.g. from homepage "Buy NVDA" button)
+    // ── 1. Auth gate — runs once on mount, before any data fetch ──────────────
+    useEffect(() => {
+        fetch('/api/auth/me')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.authenticated) {
+                    router.replace('/login');
+                } else {
+                    setAuthChecked(true);
+                }
+            })
+            .catch(() => router.replace('/login'));
+    // router is stable from useRouter(), safe to omit from exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ── 2. Prefill ticker from ?ticker= URL param ──────────────────────────────
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const t = params.get('ticker');
         if (t) setTicker(t.toUpperCase());
     }, []);
 
+    // ── 3. Stable fetchPrice — no `price` in deps, uses ref for change calc ───
     const fetchPrice = useCallback(async (sym: string) => {
         try {
             const res = await fetch(`/api/price/${sym}`);
             const data = await res.json();
             if (data.price) {
-                setPriceChange(data.price - price);
+                setPriceChange(data.price - prevPriceRef.current);
+                prevPriceRef.current = data.price;
                 setPrice(data.price);
             }
         } catch { /* ignore */ }
-    }, [price]);
+    }, []); // stable — no deps
 
+    // ── 4. Stable fetchHoldings — auth decisions handled by the gate above ────
     const fetchHoldings = useCallback(async () => {
         try {
             const res = await fetch('/api/holdings');
-            if (res.status === 401) { router.push('/login'); return; }
+            if (!res.ok) return; // silently skip; session expiry handled separately
             const data = await res.json();
             setCash(data.cash || 0);
             setHoldings(data.holdings || []);
         } catch { /* ignore */ }
-    }, [router]);
+    }, []); // stable — no deps
 
     const lcRef = useRef<typeof import('lightweight-charts') | null>(null);
 
@@ -195,13 +219,15 @@ export default function TradingDashboard() {
             .catch(e => console.error('Chart data error:', e));
     }, [ticker, chartType, timeframe, chartReady]);
 
+    // ── 5. Data fetch — only runs after auth is confirmed ─────────────────────
     useEffect(() => {
+        if (!authChecked) return;
         fetchPrice(ticker);
         fetchHoldings();
         if (priceIntervalRef.current) clearInterval(priceIntervalRef.current);
         priceIntervalRef.current = setInterval(() => fetchPrice(ticker), 30000);
         return () => { if (priceIntervalRef.current) clearInterval(priceIntervalRef.current); };
-    }, [ticker, fetchPrice, fetchHoldings]);
+    }, [authChecked, ticker, fetchPrice, fetchHoldings]);
 
     useEffect(() => {
         if (!searchQuery || searchQuery.length < 1) { setSearchResults([]); setShowSearch(false); return; }
@@ -256,6 +282,24 @@ export default function TradingDashboard() {
     };
 
     const portfolioValue = holdings.reduce((s, h) => s + h.value, 0);
+
+    // Show spinner while session check is in flight (prevents premature redirects)
+    if (!authChecked) {
+        return (
+            <div style={{
+                minHeight: '100vh', background: '#060810',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+                <div style={{
+                    width: 32, height: 32,
+                    border: '2px solid rgba(79,110,247,0.15)',
+                    borderTopColor: '#4f6ef7',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                }} />
+            </div>
+        );
+    }
 
     return (
         <div className={styles.dashWrap}>

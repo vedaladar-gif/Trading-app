@@ -28,14 +28,30 @@ export default function StatsPage() {
     const [holdings, setHoldings] = useState<HoldingEntry[]>([]);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [loading, setLoading] = useState(true);
+    // auth gate — data fetches only start once session is confirmed
+    const [authChecked, setAuthChecked] = useState(false);
     const router = useRouter();
 
+    // ── 1. Auth gate — runs once on mount, before any data fetch ──────────────
     useEffect(() => {
+        fetch('/api/auth/me')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.authenticated) {
+                    router.replace('/login');
+                } else {
+                    setAuthChecked(true);
+                }
+            })
+            .catch(() => router.replace('/login'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ── 2. Data fetch — only runs after auth is confirmed ─────────────────────
+    useEffect(() => {
+        if (!authChecked) return;
         Promise.all([
-            fetch('/api/holdings').then(r => {
-                if (r.status === 401) { router.push('/login'); return null; }
-                return r.json();
-            }),
+            fetch('/api/holdings').then(r => r.ok ? r.json() : null),
             fetch('/api/leaderboard').then(r => r.json()),
         ]).then(([holdingsData, lbData]) => {
             if (holdingsData) {
@@ -50,9 +66,9 @@ export default function StatsPage() {
             }
             setLoading(false);
         }).catch(() => setLoading(false));
-    }, [router]);
+    }, [authChecked]);
 
-    if (loading) {
+    if (!authChecked || loading) {
         return (
             <div className={styles.statsWrap} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className={styles.spinner} />

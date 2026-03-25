@@ -40,10 +40,12 @@ export default function SnapseWidget() {
                 body: JSON.stringify({ message: userMsg, mode, route: pathname }),
             });
             const data = await res.json();
-            if (data.reply) {
+            if (res.status === 401) {
+                setMessages(prev => [...prev, { role: 'assistant', content: 'Please **sign in** to use Snapse. Your session may have expired.' }]);
+            } else if (data.reply) {
                 setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
             } else {
-                setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong.' }]);
+                setMessages(prev => [...prev, { role: 'assistant', content: `Sorry, something went wrong. (${data.error ?? 'unknown error'})` }]);
             }
         } catch {
             setMessages(prev => [...prev, { role: 'assistant', content: 'Network error. Please try again.' }]);
