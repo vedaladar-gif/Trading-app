@@ -9,6 +9,9 @@ export interface User {
     username: string;
     cash: number;
     created_at: string | null;
+    display_name: string | null;
+    avatar_color: string;
+    theme: string;
 }
 
 export interface Trade {
@@ -45,7 +48,7 @@ export interface ChatMessage {
 export async function getUserById(userId: string): Promise<User | null> {
     const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, cash, created_at')
+        .select('id, username, cash, created_at, display_name, avatar_color, theme')
         .eq('id', userId)
         .maybeSingle();
     if (error) {

@@ -25,7 +25,7 @@ export default function LoginPage() {
             });
             const data = await res.json();
             if (data.success) {
-                router.push('/trade');
+                router.push(data.needsUsername ? '/setup-username' : '/trade');
             } else {
                 setError(data.error || 'Login failed');
             }
@@ -59,10 +59,23 @@ export default function LoginPage() {
         }
     };
 
+    const inputStyle: React.CSSProperties = {
+        padding: '11px 14px',
+        background: 'var(--vt-input-bg)',
+        border: '1px solid var(--vt-border)',
+        borderRadius: '9px',
+        color: 'var(--vt-text)',
+        fontSize: '14px',
+        outline: 'none',
+        width: '100%',
+        fontFamily: 'Inter, sans-serif',
+        transition: 'border-color 0.2s',
+    };
+
     return (
         <div style={{
             minHeight: '100vh',
-            background: '#060810',
+            background: 'var(--vt-bg)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -73,8 +86,8 @@ export default function LoginPage() {
             <div style={{
                 width: '100%',
                 maxWidth: '420px',
-                background: '#0d1117',
-                border: '1px solid rgba(255,255,255,0.07)',
+                background: 'var(--vt-surface)',
+                border: '1px solid var(--vt-border)',
                 borderRadius: '20px',
                 padding: '40px',
             }}>
@@ -89,10 +102,10 @@ export default function LoginPage() {
                     }}>V</div>
                     <h1 style={{
                         fontSize: '22px', fontWeight: 700,
-                        color: '#fff', margin: '0 0 6px',
+                        color: 'var(--vt-text)', margin: '0 0 6px',
                         letterSpacing: '-0.5px',
                     }}>Welcome back</h1>
-                    <p style={{ fontSize: '14px', color: '#4b5563', margin: 0 }}>Sign in to your Vestera account</p>
+                    <p style={{ fontSize: '14px', color: 'var(--vt-text2)', margin: 0 }}>Sign in to your Vestera account</p>
                 </div>
 
                 {error && (
@@ -114,41 +127,25 @@ export default function LoginPage() {
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</label>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--vt-text2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</label>
                         <input
                             type="text"
                             value={username}
                             onChange={e => setUsername(e.target.value)}
                             placeholder="you@example.com"
                             required
-                            style={{
-                                padding: '11px 14px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.07)',
-                                borderRadius: '9px',
-                                color: '#e8eaf0',
-                                fontSize: '14px',
-                                outline: 'none',
-                            }}
+                            style={inputStyle}
                         />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label style={{ fontSize: '12px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Password</label>
+                        <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--vt-text2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Password</label>
                         <input
                             type="password"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             placeholder="••••••••"
                             required
-                            style={{
-                                padding: '11px 14px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.07)',
-                                borderRadius: '9px',
-                                color: '#e8eaf0',
-                                fontSize: '14px',
-                                outline: 'none',
-                            }}
+                            style={inputStyle}
                         />
                     </div>
                     <button
@@ -194,14 +191,15 @@ export default function LoginPage() {
                     style={{
                         width: '100%', marginTop: '10px', padding: '11px',
                         background: 'none',
-                        border: '1px solid rgba(255,255,255,0.07)',
+                        border: '1px solid var(--vt-border)',
                         borderRadius: '10px',
-                        color: '#4b5563', fontSize: '13px',
+                        color: 'var(--vt-text2)', fontSize: '13px',
                         cursor: 'pointer',
+                        fontFamily: 'inherit',
                     }}
                 >Forgot password?</button>
 
-                <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: '#4b5563' }}>
+                <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: 'var(--vt-text2)' }}>
                     Don&apos;t have an account?{' '}
                     <Link href="/register" style={{ color: '#4f6ef7', textDecoration: 'none', fontWeight: 600 }}>Create one</Link>
                 </p>

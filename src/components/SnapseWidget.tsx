@@ -84,7 +84,7 @@ export default function SnapseWidget() {
                             fontSize: '14px',
                         }}>S</div>
                         <div>
-                            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#fff' }}>Snapse</h3>
+                            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: 'var(--vt-text)' }}>Snapse</h3>
                             <p style={{ margin: 0, fontSize: '11px', color: '#4f6ef7' }}>
                                 {isTrading ? 'Portfolio AI' : 'Learning Tutor'}
                             </p>
@@ -119,7 +119,7 @@ export default function SnapseWidget() {
                     <div style={{
                         padding: '8px 12px',
                         display: 'flex', flexWrap: 'wrap', gap: '6px',
-                        borderTop: '1px solid rgba(255,255,255,0.05)',
+                        borderTop: '1px solid var(--vt-border2)',
                     }}>
                         {quickPrompts.map(p => (
                             <button

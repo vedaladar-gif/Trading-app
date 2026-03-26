@@ -50,13 +50,13 @@
     right: 24px;
     width: 380px;
     height: 600px;
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: var(--vt-surface);
+    border: 1px solid var(--vt-border);
     border-radius: 12px;
     backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 25px var(--vt-shadow);
     transform: translateX(420px);
     transition: transform 0.3s ease, opacity 0.3s ease;
     opacity: 0;
@@ -178,10 +178,10 @@
 }
 
 .messageAssistant .bubble {
-    background: rgba(148, 163, 184, 0.1);
-    color: #e2e8f0;
+    background: var(--vt-input-bg);
+    color: var(--vt-text);
     border-radius: 4px 12px 12px 12px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    border: 1px solid var(--vt-border);
 }
 
 .typingDots {
@@ -226,16 +226,16 @@
     display: flex;
     gap: 8px;
     padding: 12px;
-    border-top: 1px solid rgba(148, 163, 184, 0.1);
-    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--vt-border2);
+    background: var(--vt-surface2);
     border-radius: 0 0 12px 12px;
 }
 
 .input {
     flex: 1;
-    background: rgba(148, 163, 184, 0.1);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    color: #e2e8f0;
+    background: var(--vt-input-bg);
+    border: 1px solid var(--vt-border);
+    color: var(--vt-text);
     padding: 10px 12px;
     border-radius: 6px;
     font-size: 14px;
@@ -250,7 +250,7 @@
 }
 
 .input::placeholder {
-    color: rgba(148, 163, 184, 0.5);
+    color: var(--vt-text3);
 }
 
 .sendBtn {

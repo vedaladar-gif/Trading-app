@@ -1,0 +1,98 @@
+/* ── Container ──────────────────────────────────────────────────────── */
+.wrap {
+    position: relative;
+    width: 100%;
+    /* height is set inline from the prop */
+}
+.svg {
+    display: block;
+    cursor: crosshair;
+    overflow: visible; /* allow hover dot to render outside strict bounds */
+}
+
+/* ── Loading skeleton ──────────────────────────────────────────────── */
+.skeleton {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--vt-input-bg);
+    position: relative;
+}
+.shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255,255,255,0.06) 50%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite;
+}
+[data-theme="light"] .shimmer {
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0,0,0,0.04) 50%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+}
+@keyframes shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+}
+
+/* ── Empty state ───────────────────────────────────────────────────── */
+.empty {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.emptyIcon  { font-size: 28px; margin-bottom: 4px; }
+.emptyTitle { font-size: 14px; font-weight: 600; color: var(--vt-text2); margin: 0; }
+.emptySub   { font-size: 12px; color: var(--vt-text3); margin: 0; text-align: center; }
+.emptyLink  {
+    margin-top: 4px;
+    color: #4f6ef7;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.emptyLink:hover { text-decoration: underline; }
+
+/* ── Hover tooltip ─────────────────────────────────────────────────── */
+.tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--vt-surface);
+    border: 1px solid var(--vt-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 8px 24px var(--vt-shadow);
+    white-space: nowrap;
+    z-index: 10;
+    min-width: 120px;
+}
+.ttDate  {
+    font-size: 11px;
+    color: var(--vt-text3);
+    margin-bottom: 2px;
+    font-family: 'Inter', sans-serif;
+}
+.ttValue {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    font-family: 'Inter', sans-serif;
+}
+.ttDelta {
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 2px;
+    font-family: 'Inter', sans-serif;
+}

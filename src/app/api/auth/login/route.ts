@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUserById } from '@/lib/models';
 import { getSession } from '@/lib/session';
 import { supabase, createAuthedClient } from '@/lib/supabaseClient';
+import { isEmailUsername } from '@/lib/avatarColors';
 
 const STARTING_CASH = 100_000;
 
@@ -29,14 +30,15 @@ export async function POST(request: Request) {
         let user = await getUserById(data.user.id);
 
         if (!user) {
-            // Profile is missing — create it now using the authenticated session so
-            // that RLS auth.uid() = id is satisfied without a service-role key.
+            // Self-heal: use the username stored in auth metadata at registration time.
+            // Fall back to email only if metadata is missing (very old accounts).
             const authedClient = createAuthedClient(data.session!.access_token);
+            const metaUsername = (data.user.user_metadata?.username as string | undefined) || email;
 
             const { data: profileData, error: profileError } = await authedClient
                 .from('profiles')
-                .insert({ id: data.user.id, username: email, cash: STARTING_CASH })
-                .select('id, username, cash, created_at')
+                .insert({ id: data.user.id, username: metaUsername, cash: STARTING_CASH })
+                .select('id, username, cash, created_at, display_name, avatar_color, theme')
                 .maybeSingle();
 
             if (profileError) {
@@ -55,7 +57,11 @@ export async function POST(request: Request) {
         session.userId = user.id;
         await session.save();
 
-        return NextResponse.json({ success: true, user: { id: user.id, username: user.username } });
+        return NextResponse.json({
+            success: true,
+            user: { id: user.id, username: user.username },
+            needsUsername: isEmailUsername(user.username),
+        });
     } catch (e) {
         console.error('Login error:', e);
         return NextResponse.json({ error: 'Login failed' }, { status: 500 });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase, createAuthedClient } from '@/lib/supabaseClient';
+import { USERNAME_REGEX } from '@/lib/avatarColors';
 
 const STARTING_CASH = 100_000;
 
@@ -10,15 +11,37 @@ export async function POST(request: Request) {
         if (!email?.trim() || !password?.trim()) {
             return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
         }
+        if (!username?.trim()) {
+            return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+        }
 
         const cleanEmail = email.trim().toLowerCase();
-        const displayName = (username?.trim() || cleanEmail);
+        const cleanUsername = username.trim().toLowerCase();
 
-        // 1. Create the Supabase auth user
+        // Validate username format
+        if (!USERNAME_REGEX.test(cleanUsername)) {
+            return NextResponse.json(
+                { error: 'Username must be 3–20 characters: letters, numbers, underscores, and periods only.' },
+                { status: 400 }
+            );
+        }
+
+        // Check username uniqueness before creating the auth user
+        const { data: existing } = await supabase
+            .from('profiles')
+            .select('id')
+            .ilike('username', cleanUsername)
+            .maybeSingle();
+
+        if (existing) {
+            return NextResponse.json({ error: 'That username is already taken.' }, { status: 409 });
+        }
+
+        // Create the Supabase auth user — store username in metadata for self-heal on first login
         const { data, error } = await supabase.auth.signUp({
             email: cleanEmail,
             password: password.trim(),
-            options: { data: { username: displayName } },
+            options: { data: { username: cleanUsername } },
         });
 
         if (error || !data.user) {
@@ -29,26 +52,19 @@ export async function POST(request: Request) {
             );
         }
 
-        // 2. Create the profile row.
-        //    If Supabase returned a session (email-confirm disabled) we use an
-        //    authenticated client so RLS auth.uid() = id is satisfied.
-        //    If there is no session yet (email-confirm enabled) we still attempt
-        //    the insert — it will succeed if the table has an open insert policy
-        //    or a trigger; otherwise the login self-heal will create it later.
+        // Create profile. Use authed client if we have a session (email-confirm disabled).
+        // If email-confirm is enabled we still attempt the insert; the login self-heal will
+        // pick up the correct username from auth metadata if this fails.
         const client = data.session?.access_token
             ? createAuthedClient(data.session.access_token)
             : supabase;
 
         const { error: profileError } = await client
             .from('profiles')
-            .insert({ id: data.user.id, username: displayName, cash: STARTING_CASH });
+            .insert({ id: data.user.id, username: cleanUsername, cash: STARTING_CASH });
 
-        if (profileError) {
-            // Non-fatal: if the profile already exists (duplicate key) that is fine.
-            // Any other error is logged so it can be debugged in the server console.
-            if (profileError.code !== '23505') {
-                console.error('createProfile error during register:', profileError);
-            }
+        if (profileError && profileError.code !== '23505') {
+            console.error('createProfile error during register:', profileError);
         }
 
         return NextResponse.json({ success: true });

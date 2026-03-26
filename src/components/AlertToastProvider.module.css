@@ -1,0 +1,141 @@
+/* ── Container ────────────────────────────────────────────────────────── */
+.container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    width: 340px;
+}
+
+/* ── Toast card ───────────────────────────────────────────────────────── */
+.toast {
+    background: var(--vt-surface);
+    border: 1px solid var(--vt-border);
+    border-top: 3px solid var(--accent, #4f6ef7);
+    border-radius: 14px;
+    box-shadow: 0 16px 48px var(--vt-shadow), 0 4px 12px rgba(0,0,0,0.08);
+    padding: 16px;
+    pointer-events: all;
+    cursor: default;
+    animation: slideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    overflow: hidden;
+}
+.toastOut {
+    animation: slideOut 0.3s ease both;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(110%); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(110%); }
+}
+
+/* ── Toast header ─────────────────────────────────────────────────────── */
+.toastHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.toastTitle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.toastIcon { font-size: 16px; line-height: 1; }
+.toastTicker {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--vt-text);
+    letter-spacing: -0.3px;
+}
+.toastLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--vt-text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--vt-input-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ── Toast close ──────────────────────────────────────────────────────── */
+.toastClose {
+    background: none;
+    border: none;
+    color: var(--vt-text3);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+    font-family: inherit;
+}
+.toastClose:hover { color: var(--vt-text); background: var(--vt-hover); }
+
+/* ── Toast body ───────────────────────────────────────────────────────── */
+.toastMsg {
+    font-size: 13px;
+    color: var(--vt-text2);
+    margin: 0 0 4px;
+    line-height: 1.5;
+}
+.toastMsg strong { color: var(--vt-text); }
+.toastPrice {
+    font-size: 12px;
+    color: var(--vt-text3);
+    margin: 0 0 12px;
+}
+
+/* ── CTA button ───────────────────────────────────────────────────────── */
+.toastCta {
+    display: block;
+    width: 100%;
+    padding: 9px 14px;
+    background: rgba(79,110,247,0.12);
+    border: 1px solid rgba(79,110,247,0.25);
+    border-radius: 8px;
+    color: #4f6ef7;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.2s, transform 0.15s;
+    margin-bottom: 10px;
+}
+.toastCta:hover {
+    background: rgba(79,110,247,0.2);
+    transform: translateY(-1px);
+}
+
+/* ── Progress bar ─────────────────────────────────────────────────────── */
+.toastProgressTrack {
+    height: 3px;
+    background: var(--vt-border2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.toastProgressBar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.1s linear;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .container {
+        left: 12px;
+        right: 12px;
+        bottom: 16px;
+        width: auto;
+    }
+}

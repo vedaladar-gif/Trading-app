@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vestera — Profile & Settings Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+<style>
+/* ─── THEME VARIABLES ─────────────────────────────────── */
+:root {
+  --bg:        #060810;
+  --surface:   #0d1117;
+  --surface2:  #111827;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.04);
+  --text:      #e8eaf0;
+  --text2:     #6b7280;
+  --text3:     #374151;
+  --accent:    #4f6ef7;
+  --accent2:   #9b5de5;
+  --green:     #4ade80;
+  --red:       #f87171;
+  --gold:      #fbbf24;
+  --nav-bg:    rgba(6,8,16,0.92);
+}
+[data-theme="light"] {
+  --bg:        #f1f5f9;
+  --surface:   #ffffff;
+  --surface2:  #f8fafc;
+  --border:    rgba(0,0,0,0.08);
+  --border2:   rgba(0,0,0,0.05);
+  --text:      #0f172a;
+  --text2:     #64748b;
+  --text3:     #94a3b8;
+  --accent:    #4f6ef7;
+  --accent2:   #9b5de5;
+  --green:     #16a34a;
+  --red:       #dc2626;
+  --gold:      #d97706;
+  --nav-bg:    rgba(241,245,249,0.92);
+}
+
+/* ─── RESET ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ─── NAVBAR ──────────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+  transition: background 0.3s;
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 17px; font-weight: 700; color: var(--text);
+}
+.v-logo {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, #4f6ef7, #9b5de5);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: #fff;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 4px;
+}
+.nav-links a, .nav-btn {
+  padding: 7px 14px;
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  border-radius: 8px;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-links a:hover, .nav-btn:hover {
+  color: var(--text); background: rgba(255,255,255,0.05);
+}
+.nav-links a.active { color: var(--text); font-weight: 600; }
+
+/* Profile avatar in nav */
+.nav-avatar {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+  cursor: pointer; border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+.nav-avatar:hover { border-color: var(--accent); }
+
+/* ─── PAGE SWITCHER ───────────────────────────────────── */
+.view { display: none; padding-top: 78px; min-height: 100vh; }
+.view.active { display: block; }
+
+/* ─── SHARED LAYOUT ───────────────────────────────────── */
+.page-inner {
+  max-width: 900px; margin: 0 auto; padding: 32px 24px;
+}
+.page-inner-wide {
+  max-width: 1100px; margin: 0 auto; padding: 32px 24px;
+}
+
+/* ─── CARDS ───────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+/* ─── FORM ELEMENTS ───────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.7px;
+}
+.field input, .field textarea {
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text); font-size: 14px; font-family: inherit;
+  outline: none; transition: border-color 0.15s, background 0.3s;
+}
+[data-theme="light"] .field input,
+[data-theme="light"] .field textarea {
+  background: rgba(0,0,0,0.03);
+}
+.field input:focus, .field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,110,247,0.12);
+}
+.field input.valid { border-color: rgba(74,222,128,0.4); }
+.field input.invalid { border-color: rgba(248,113,113,0.4); }
+.hint { font-size: 12px; color: var(--text2); margin-top: 3px; }
+.hint.error { color: var(--red); }
+.hint.success { color: var(--green); }
+
+.btn {
+  padding: 11px 20px; border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-ghost {
+  background: rgba(255,255,255,0.05); color: var(--text2);
+  border: 1px solid var(--border);
+}
+[data-theme="light"] .btn-ghost { background: rgba(0,0,0,0.04); }
+.btn-ghost:hover { color: var(--text); }
+.btn-danger { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+/* ─── BADGE ───────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-blue { background: rgba(79,110,247,0.12); color: #7d9bff; border: 1px solid rgba(79,110,247,0.2); }
+.badge-green { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+
+/* ─── SECTION HEADING ─────────────────────────────────── */
+.section-h {
+  font-size: 18px; font-weight: 700; color: var(--text);
+  margin-bottom: 4px; letter-spacing: -0.4px;
+}
+.section-sub { font-size: 13px; color: var(--text2); }
+
+/* ─── AVATAR SYSTEM ───────────────────────────────────── */
+.avatar {
+  border-radius: 14px; display: flex; align-items: center;
+  justify-content: center; font-weight: 700; color: #fff; flex-shrink: 0;
+  font-size: 16px;
+}
+.avatar-sm { width: 36px; height: 36px; border-radius: 10px; font-size: 13px; }
+.avatar-md { width: 48px; height: 48px; border-radius: 14px; font-size: 18px; }
+.avatar-lg { width: 80px; height: 80px; border-radius: 20px; font-size: 28px; }
+
+/* ─── REGISTER PAGE ───────────────────────────────────── */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; padding-top: 82px;
+}
+.auth-card {
+  width: 100%; max-width: 440px;
+  padding: 40px;
+}
+.auth-logo {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, #4f6ef7, #9b5de5);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: #fff;
+  margin: 0 auto 20px;
+}
+.auth-title {
+  font-size: 22px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.5px; text-align: center; margin-bottom: 6px;
+}
+.auth-sub { font-size: 14px; color: var(--text2); text-align: center; margin-bottom: 32px; }
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--text3); font-size: 12px; margin: 4px 0;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.username-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; padding: 6px 0;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-checking { background: var(--gold); animation: pulse 1s infinite; }
+.dot-available { background: var(--green); }
+.dot-taken { background: var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ─── USERNAME PROMPT (existing user) ────────────────── */
+.prompt-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.prompt-card {
+  width: 100%; max-width: 420px; padding: 40px; position: relative;
+}
+.prompt-steps {
+  display: flex; gap: 8px; margin-bottom: 32px;
+}
+.step-dot {
+  height: 4px; border-radius: 2px; flex: 1;
+  background: var(--border); transition: background 0.3s;
+}
+.step-dot.done { background: var(--accent); }
+
+/* ─── PROFILE PAGE ────────────────────────────────────── */
+.profile-grid {
+  display: grid; grid-template-columns: 260px 1fr; gap: 20px;
+}
+.sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 10px;
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  cursor: pointer; border: none; background: none;
+  font-family: inherit; width: 100%; text-align: left;
+  transition: color 0.15s, background 0.15s;
+}
+.sidebar-link:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+[data-theme="light"] .sidebar-link:hover { background: rgba(0,0,0,0.04); }
+.sidebar-link.active { color: var(--text); background: rgba(79,110,247,0.1); font-weight: 600; }
+.sidebar-icon { width: 18px; height: 18px; opacity: 0.7; }
+
+/* Profile section */
+.profile-hero {
+  display: flex; align-items: flex-start; gap: 20px;
+  padding: 28px; margin-bottom: 20px;
+}
+.avatar-presets {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+  margin-top: 16px;
+}
+.avatar-preset {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer; border: 2px solid transparent;
+  transition: border-color 0.15s, transform 0.1s; font-style: normal;
+}
+.avatar-preset:hover { transform: scale(1.1); }
+.avatar-preset.selected { border-color: var(--accent); }
+
+/* Settings page */
+.settings-section { margin-bottom: 32px; }
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border2);
+}
+.settings-row:last-child { border-bottom: none; }
+
+/* Theme toggle */
+.theme-toggle {
+  display: flex; gap: 6px; padding: 4px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px; border: 1px solid var(--border);
+}
+[data-theme="light"] .theme-toggle { background: rgba(0,0,0,0.04); }
+.theme-btn {
+  padding: 7px 16px; border-radius: 7px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: none; font-family: inherit; color: var(--text2);
+  background: transparent; transition: all 0.2s;
+}
+.theme-btn.active {
+  background: var(--surface); color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+[data-theme="light"] .theme-btn.active { box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+/* Toggle switch */
+.toggle-switch {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--border); cursor: pointer; position: relative;
+  transition: background 0.2s;
+}
+.toggle-switch.on { background: var(--accent); }
+.toggle-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; position: absolute;
+  top: 3px; left: 3px; transition: left 0.2s;
+}
+.toggle-switch.on .toggle-thumb { left: 23px; }
+
+/* ─── LEADERBOARD ─────────────────────────────────────── */
+.lb-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; border-radius: 12px;
+  transition: background 0.15s; cursor: default;
+}
+.lb-row:hover { background: rgba(255,255,255,0.03); }
+[data-theme="light"] .lb-row:hover { background: rgba(0,0,0,0.03); }
+.lb-row.me {
+  background: rgba(79,110,247,0.07);
+  border: 1px solid rgba(79,110,247,0.15);
+}
+.lb-rank {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.lb-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.lb-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.lb-pct { font-size: 14px; font-weight: 700; text-align: right; }
+.lb-cash { font-size: 11px; color: var(--text2); text-align: right; margin-top: 1px; }
+
+/* Color bars for leaderboard */
+.lb-bar-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+.lb-bar-track { flex: 1; height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.lb-bar-fill { height: 100%; border-radius: 2px; }
+
+/* ─── STATS SUMMARY ───────────────────────────────────── */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-bottom: 24px;
+}
+.stat-card { padding: 20px 22px; }
+.stat-label {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px;
+}
+.stat-val { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+
+/* ─── MISC ────────────────────────────────────────────── */
+.section-title {
+  font-size: 28px; font-weight: 800; color: var(--text);
+  letter-spacing: -1px; margin-bottom: 6px;
+}
+.section-desc { font-size: 14px; color: var(--text2); margin-bottom: 28px; }
+.row { display: flex; gap: 12px; align-items: flex-start; }
+.col { flex: 1; }
+.gap-16 { display: flex; flex-direction: column; gap: 16px; }
+.gap-12 { display: flex; flex-direction: column; gap: 12px; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.flex-center { display: flex; align-items: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* ─── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 700px) {
+  .profile-grid { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .auth-card { padding: 28px 20px; }
+}
+
+/* ─── GLOW EFFECTS ────────────────────────────────────── */
+.glow-wrap { position: relative; }
+.glow-wrap::before {
+  content: '';
+  position: absolute; top: -60px; right: 10%; z-index: 0;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(79,110,247,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+[data-theme="light"] .glow-wrap::before { opacity: 0; }
+
+/* Color palette for avatars */
+.av-blue  { background: linear-gradient(135deg, #4f6ef7, #6d8bff); }
+.av-purple{ background: linear-gradient(135deg, #9b5de5, #c084fc); }
+.av-green { background: linear-gradient(135deg, #22c55e, #4ade80); }
+.av-orange{ background: linear-gradient(135deg, #f97316, #fb923c); }
+.av-pink  { background: linear-gradient(135deg, #ec4899, #f472b6); }
+.av-teal  { background: linear-gradient(135deg, #14b8a6, #2dd4bf); }
+.av-red   { background: linear-gradient(135deg, #ef4444, #f87171); }
+.av-yellow{ background: linear-gradient(135deg, #eab308, #facc15); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+  NAVBAR
+════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="v-logo">V</div>
+    Vestera
+  </div>
+  <div class="nav-links">
+    <a href="#" class="nav-btn" onclick="showView('register')">Register</a>
+    <a href="#" class="nav-btn" onclick="showView('stats')">Stats</a>
+    <a href="#" class="nav-btn" onclick="showView('profile')">Profile</a>
+    <div class="nav-avatar av-blue avatar" title="Your profile" onclick="showView('profile')" style="font-size:13px;font-weight:700;">AK</div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════
+  VIEW 1: REGISTER (NEW USER FLOW)
+════════════════════════════════════════════════════════ -->
+<div class="view active" id="view-register">
+  <div class="auth-wrap">
+    <div class="auth-card card">
+      <div class="auth-logo">V</div>
+      <div class="auth-title">Create your account</div>
+      <div class="auth-sub">Start trading with $100K virtual cash</div>
+
+      <div class="auth-form">
+
+        <!-- Email -->
+        <div class="field">
+          <label>Email</label>
+          <input type="email" placeholder="you@example.com" id="reg-email"
+                 oninput="validateEmail(this)" />
+        </div>
+
+        <div class="divider">choose a username</div>
+
+        <!-- Username -->
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="reg-username" placeholder="e.g. aarnav_trades"
+                 maxlength="20"
+                 oninput="checkUsername(this)" />
+          <div class="hint" id="username-hint">Letters, numbers, underscores, periods · 3–20 characters</div>
+          <div class="username-status" id="username-status" style="display:none">
+            <div class="dot" id="status-dot"></div>
+            <span id="status-text"></span>
+          </div>
+        </div>
+
+        <div class="divider">set a password</div>
+
+        <!-- Password -->
+        <div class="field">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••" id="reg-pass"
+                 oninput="validatePass(this)" />
+          <div class="hint" id="pass-hint">At least 8 characters</div>
+        </div>
+
+        <!-- Confirm -->
+        <div class="field">
+          <label>Confirm Password</label>
+          <input type="password" placeholder="••••••••" id="reg-confirm"
+                 oninput="validateConfirm(this)" />
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;margin-top:4px;justify-content:center;"
+                onclick="doRegister()">
+          Create Account
+        </button>
+
+        <p style="text-align:center;font-size:13px;color:var(--text2);">
+          Already have an account?
+          <a href="#" style="color:var(--accent);font-weight:600;">Sign in</a>
+        </p>
+        <p style="text-align:center;font-size:11px;color:var(--text3);">
+          For educational purposes only. Not financial advice.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+  VIEW 2: USERNAME PROMPT (EXISTING USER, NO USERNAME)
+════════════════════════════════════════════════════════ -->
+<div class="view" id="view-prompt">
+  <div class="auth-wrap">
+    <div class="prompt-card card">
+      <div class="prompt-steps">
+        <div class="step-dot done" id="pdot1"></div>
+        <div class="step-dot" id="pdot2"></div>
+        <div class="step-dot" id="pdot3"></div>
+      </div>
+
+      <div id="prompt-step1">
+        <div style="margin-bottom:28px">
+          <div class="section-h" style="margin-bottom:8px">One quick thing</div>
+          <div class="section-sub">
+            To appear on the leaderboard and let others recognize you, you need a public username.
+            This is separate from your email and shown everywhere in the app.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Choose a username</label>
+          <input type="text" id="p-username" placeholder="e.g. aarnav_trades"
+                 maxlength="20" oninput="checkPromptUsername(this)" />
+          <div class="hint">Letters, numbers, underscores, periods · 3–20 chars</div>
+          <div class="username-status" id="p-username-status" style="display:none">
+            <div class="dot" id="p-status-dot"></div>
+            <span id="p-status-text"></span>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;display:flex;gap:10px;">
+          <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="promptNext(2)">
+            Continue →
+          </button>
+        </div>
+      </div>
+
+      <div id="prompt-step2" style="display:none">
+        <div style="margin-bottom:28px">
+          <div class="section-h" style="margin-bottom:8px">Pick an avatar</div>
+          <div class="section-sub">This will show next to your name on the leaderboard.</div>
+        </div>
+
+        <div class="avatar-presets" id="prompt-presets">
+          <!-- filled by JS -->
+        </div>
+
+        <div style="margin-top:24px;display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="promptNext(1)">← Back</button>
+          <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="promptNext(3)">
+            Continue →
+          </button>
+        </div>
+      </div>
+
+      <div id="prompt-step3" style="display:none">
+        <div style="margin-bottom:28px">
+          <div class="section-h" style="margin-bottom:8px">All set!</div>
+          <div class="section-sub">Your username is saved. You can always change it in Settings.</div>
+        </div>
+
+        <div style="padding:20px;border-radius:14px;background:rgba(79,110,247,0.07);border:1px solid rgba(79,110,247,0.15);">
+          <div class="flex-center" style="gap:14px;">
+            <div id="confirm-avatar" class="avatar avatar-md av-blue">AK</div>
+            <div>
+              <div style="font-size:16px;font-weight:700;color:var(--text)" id="confirm-name">aarnav_trades</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:3px;">Vestera Paper Trader</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;margin-top:24px;justify-content:center;"
+                onclick="showView('stats')">
+          Go to Dashboard →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+  VIEW 3: STATS + LEADERBOARD
+════════════════════════════════════════════════════════ -->
+<div class="view glow-wrap" id="view-stats">
+  <div class="page-inner-wide">
+
+    <div style="margin-bottom:32px">
+      <div class="section-title">Portfolio</div>
+      <div class="section-desc">Your performance and standings</div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stat-grid">
+      <div class="stat-card card">
+        <div class="stat-label">Account Value</div>
+        <div class="stat-val">$102,847.30</div>
+      </div>
+      <div class="stat-card card">
+        <div class="stat-label">Available Cash</div>
+        <div class="stat-val">$87,211.50</div>
+      </div>
+      <div class="stat-card card">
+        <div class="stat-label">Total Return</div>
+        <div class="stat-val" style="color:var(--green)">+2.85%</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:20px">
+
+      <!-- Holdings -->
+      <div class="card" style="padding:24px">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:20px;">Current Holdings</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;border-bottom:1px solid var(--border)">Stock</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;border-bottom:1px solid var(--border)">Shares</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;border-bottom:1px solid var(--border)">Price</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;border-bottom:1px solid var(--border)">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:12px;font-weight:700;color:var(--text);font-size:13px;border-bottom:1px solid var(--border2)">NVDA</td>
+              <td style="padding:12px;color:var(--text2);font-size:13px;border-bottom:1px solid var(--border2)">12</td>
+              <td style="padding:12px;color:var(--text2);font-size:13px;border-bottom:1px solid var(--border2)">$1,283.44</td>
+              <td style="padding:12px;color:var(--accent);font-weight:600;font-size:13px;border-bottom:1px solid var(--border2)">$15,401.28</td>
+            </tr>
+            <tr>
+              <td style="padding:12px;font-weight:700;color:var(--text);font-size:13px;border-bottom:1px solid var(--border2)">AAPL</td>
+              <td style="padding:12px;color:var(--text2);font-size:13px;border-bottom:1px solid var(--border2)">5</td>
+              <td style="padding:12px;color:var(--text2);font-size:13px;border-bottom:1px solid var(--border2)">$189.30</td>
+              <td style="padding:12px;color:var(--accent);font-weight:600;font-size:13px;border-bottom:1px solid var(--border2)">$946.50</td>
+            </tr>
+            <tr>
+              <td style="padding:12px;font-weight:700;color:var(--text);font-size:13px;">TSLA</td>
+              <td style="padding:12px;color:var(--text2);font-size:13px;">8</td>
+              <td style="padding:12px;color:var(--text2);font-size:13px;">$174.12</td>
+              <td style="padding:12px;color:var(--accent);font-weight:600;font-size:13px;">$1,393.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Leaderboard — updated design with avatars & usernames -->
+      <div class="card" style="padding:24px">
+        <div class="flex-between" style="margin-bottom:20px">
+          <div style="font-size:14px;font-weight:700;color:var(--text)">Leaderboard</div>
+          <span class="badge badge-blue">You #3</span>
+        </div>
+
+        <div class="gap-12" id="lb-list">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+  VIEW 4: PROFILE / SETTINGS
+════════════════════════════════════════════════════════ -->
+<div class="view" id="view-profile">
+  <div class="page-inner">
+
+    <div style="margin-bottom:28px">
+      <div class="section-title">Settings</div>
+      <div class="section-desc">Manage your profile, appearance, and account preferences.</div>
+    </div>
+
+    <div class="profile-grid">
+
+      <!-- Sidebar -->
+      <div>
+        <div class="card" style="padding:16px">
+          <!-- Mini profile -->
+          <div style="padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
+            <div class="avatar avatar-md av-blue">AK</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--text)">aarnav_k</div>
+              <div style="font-size:12px;color:var(--text2)">Rank #3</div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:8px 0 12px"></div>
+          <div class="sidebar-nav">
+            <button class="sidebar-link active" onclick="showSettingsTab('profile', this)">
+              <svg class="sidebar-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
+              Profile
+            </button>
+            <button class="sidebar-link" onclick="showSettingsTab('appearance', this)">
+              <svg class="sidebar-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
+              Appearance
+            </button>
+            <button class="sidebar-link" onclick="showSettingsTab('account', this)">
+              <svg class="sidebar-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/></svg>
+              Account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div>
+
+        <!-- ── Profile tab ── -->
+        <div id="tab-profile">
+
+          <!-- Avatar & display name -->
+          <div class="card profile-hero" style="margin-bottom:20px;">
+            <div class="avatar avatar-lg av-blue" id="profile-avatar-big">AK</div>
+            <div style="flex:1">
+              <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;">Aarnav K</div>
+              <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">@aarnav_k · Member since Mar 2026</div>
+              <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Choose an avatar color</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <div class="avatar-preset av-blue selected" onclick="selectAvatar(this,'av-blue','AK')" title="Blue">
+                  <span style="font-size:18px;color:#fff;font-weight:700;">A</span>
+                </div>
+                <div class="avatar-preset av-purple" onclick="selectAvatar(this,'av-purple','AK')" title="Purple">
+                  <span style="font-size:18px;color:#fff;font-weight:700;">A</span>
+                </div>
+                <div class="avatar-preset av-green" onclick="selectAvatar(this,'av-green','AK')" title="Green">
+                  <span style="font-size:18px;color:#fff;font-weight:700;">A</span>
+                </div>
+                <div class="avatar-preset av-orange" onclick="selectAvatar(this,'av-orange','AK')" title="Orange">
+                  <span style="font-size:18px;color:#fff;font-weight:700;">A</span>
+                </div>
+                <div class="avatar-preset av-pink" onclick="selectAvatar(this,'av-pink','AK')" title="Pink">
+                  <span style="font-size:18px;color:#fff;font-weight:700;">A</span>
+                </div>
+                <div class="avatar-preset av-teal" onclick="selectAvatar(this,'av-teal','AK')" title="Teal">
+                  <span style="font-size:18px;color:#fff;font-weight:700;">A</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit fields -->
+          <div class="card" style="padding:28px">
+            <div class="section-h" style="margin-bottom:4px;font-size:15px;">Profile info</div>
+            <div class="section-sub" style="margin-bottom:24px;">This is how others see you on the leaderboard.</div>
+
+            <div class="gap-16">
+              <div class="field">
+                <label>Display Name <span style="text-transform:none;font-weight:400;letter-spacing:0">(optional)</span></label>
+                <input type="text" placeholder="Aarnav K" value="Aarnav K" />
+                <div class="hint">Shown alongside your username if set. Not required.</div>
+              </div>
+
+              <div class="field">
+                <label>Username</label>
+                <div style="position:relative">
+                  <input type="text" value="aarnav_k" id="settings-username"
+                         style="padding-right:90px" oninput="checkSettingsUsername(this)" />
+                  <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text2);">
+                    <span id="settings-un-status">✓ available</span>
+                  </span>
+                </div>
+                <div class="hint">Letters, numbers, underscores, periods · 3–20 chars</div>
+              </div>
+
+              <div style="display:flex;gap:10px;margin-top:4px">
+                <button class="btn btn-primary" onclick="saveBanner(this)">Save Changes</button>
+                <button class="btn btn-ghost">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Appearance tab ── -->
+        <div id="tab-appearance" style="display:none">
+          <div class="card" style="padding:28px;margin-bottom:20px">
+            <div class="section-h" style="margin-bottom:4px;font-size:15px;">Theme</div>
+            <div class="section-sub" style="margin-bottom:24px;">Choose how Vestera looks for you. Syncs across sessions.</div>
+
+            <div class="settings-section">
+              <div class="settings-row" style="padding-left:0;padding-right:0">
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text)">Color theme</div>
+                  <div style="font-size:12px;color:var(--text2);margin-top:3px">Changes the background and surface colors app-wide</div>
+                </div>
+                <div class="theme-toggle">
+                  <button class="theme-btn" id="tbtn-dark" onclick="setTheme('dark')"
+                          style="display:flex;align-items:center;gap:6px">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                    Dark
+                  </button>
+                  <button class="theme-btn" id="tbtn-light" onclick="setTheme('light')"
+                          style="display:flex;align-items:center;gap:6px">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
+                    Light
+                  </button>
+                  <button class="theme-btn" id="tbtn-system" onclick="setTheme('system')"
+                          style="display:flex;align-items:center;gap:6px">
+                    <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.321a1 1 0 010 1.88l-4.404-1.761A1 1 0 018.5 16.2l.804-.321L9.42 15H7a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd"/></svg>
+                    System
+                  </button>
+                </div>
+              </div>
+
+              <div class="settings-row" style="padding-left:0;padding-right:0">
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text)">Compact mode</div>
+                  <div style="font-size:12px;color:var(--text2);margin-top:3px">Reduce padding and spacing for a denser layout</div>
+                </div>
+                <div class="toggle-switch" id="compact-toggle" onclick="toggleSwitch(this)">
+                  <div class="toggle-thumb"></div>
+                </div>
+              </div>
+
+              <div class="settings-row" style="padding-left:0;padding-right:0">
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text)">Animations</div>
+                  <div style="font-size:12px;color:var(--text2);margin-top:3px">Fade-ins, transitions, and chart draw effects</div>
+                </div>
+                <div class="toggle-switch on" id="anim-toggle" onclick="toggleSwitch(this)">
+                  <div class="toggle-thumb"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Theme preview -->
+          <div class="card" style="padding:24px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;">Preview</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;">
+                <div style="font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Account Value</div>
+                <div style="font-size:20px;font-weight:700;color:var(--text)">$102,847</div>
+              </div>
+              <div style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;">
+                <div style="font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Total Return</div>
+                <div style="font-size:20px;font-weight:700;color:var(--green)">+2.85%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Account tab ── -->
+        <div id="tab-account" style="display:none">
+          <div class="card" style="padding:28px;margin-bottom:16px">
+            <div class="section-h" style="font-size:15px;margin-bottom:4px">Account</div>
+            <div class="section-sub" style="margin-bottom:24px">Manage your login and security settings.</div>
+
+            <div class="gap-16">
+              <div class="field">
+                <label>Email</label>
+                <input type="email" value="aarnav@example.com" disabled
+                       style="opacity:0.5;cursor:not-allowed" />
+                <div class="hint">Email cannot be changed. Contact support if needed.</div>
+              </div>
+              <div class="field">
+                <label>New Password</label>
+                <input type="password" placeholder="Leave blank to keep current" />
+              </div>
+              <div class="field">
+                <label>Confirm New Password</label>
+                <input type="password" placeholder="••••••••" />
+              </div>
+              <button class="btn btn-primary" style="align-self:flex-start" onclick="saveBanner(this)">Update Password</button>
+            </div>
+          </div>
+
+          <div class="card" style="padding:24px;">
+            <div style="font-size:14px;font-weight:600;color:var(--red);margin-bottom:8px;">Danger Zone</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">
+              Deleting your account removes all data including your portfolio, trade history, and leaderboard position. This cannot be undone.
+            </div>
+            <button class="btn btn-danger">Delete Account</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" style="
+  position:fixed;bottom:24px;right:24px;z-index:500;
+  background:#1a2235;border:1px solid rgba(79,110,247,0.3);
+  color:#e8eaf0;padding:12px 20px;border-radius:12px;
+  font-size:13px;font-weight:600;
+  transform:translateY(80px);opacity:0;
+  transition:all 0.3s;pointer-events:none;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+">✓ Changes saved</div>
+
+<!-- ═══════════════════════════════════════════════════════
+  NAV DEMO STRIP
+════════════════════════════════════════════════════════ -->
+<div style="
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:10px 24px;display:flex;gap:6px;align-items:center;
+  z-index:90;font-size:12px;color:var(--text2);
+">
+  <span style="font-weight:600;color:var(--text2);">View:</span>
+  <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="showView('register')">Register (New User)</button>
+  <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="showView('prompt')">Username Prompt (Existing)</button>
+  <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="showView('stats')">Stats + Leaderboard</button>
+  <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;" onclick="showView('profile')">Profile / Settings</button>
+</div>
+
+<script>
+/* ─── VIEW SWITCHER ───────────────────────────── */
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + name);
+  if (el) el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ─── SETTINGS TABS ───────────────────────────── */
+function showSettingsTab(name, btn) {
+  ['profile','appearance','account'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = 'none';
+  });
+  document.getElementById('tab-' + name).style.display = 'block';
+  document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ─── THEME ───────────────────────────────────── */
+function setTheme(t) {
+  let applied = t;
+  if (t === 'system') applied = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', applied);
+  localStorage.setItem('vt-theme', t);
+  ['dark','light','system'].forEach(n => {
+    document.getElementById('tbtn-' + n)?.classList.remove('active');
+  });
+  document.getElementById('tbtn-' + t)?.classList.add('active');
+}
+// Init theme
+(function(){
+  const saved = localStorage.getItem('vt-theme') || 'dark';
+  setTheme(saved);
+})();
+
+/* ─── TOGGLE SWITCH ───────────────────────────── */
+function toggleSwitch(el) { el.classList.toggle('on'); }
+
+/* ─── TOAST ───────────────────────────────────── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = (msg || '✓ Changes saved');
+  t.style.transform = 'translateY(0)'; t.style.opacity = '1';
+  setTimeout(() => { t.style.transform = 'translateY(80px)'; t.style.opacity = '0'; }, 2200);
+}
+function saveBanner(btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  setTimeout(() => { btn.textContent = orig; btn.disabled = false; showToast('✓ Changes saved'); }, 1000);
+}
+
+/* ─── USERNAME VALIDATION ─────────────────────── */
+const UN_RE = /^[a-zA-Z0-9_.]{3,20}$/;
+const TAKEN = ['admin','vestera','test','user','aarnav','john_doe'];
+
+function usernameError(val) {
+  if (!val) return null;
+  if (val.length < 3) return 'Too short — at least 3 characters';
+  if (val.length > 20) return 'Too long — max 20 characters';
+  if (!/^[a-zA-Z0-9_.]+$/.test(val)) return 'Only letters, numbers, underscores, and periods';
+  return null;
+}
+
+let unTimer;
+function checkUsername(inp) {
+  const val = inp.value.trim();
+  const hint = document.getElementById('username-hint');
+  const status = document.getElementById('username-status');
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+
+  const err = usernameError(val);
+  if (err) {
+    inp.className = val ? 'invalid' : '';
+    hint.textContent = err;
+    hint.className = 'hint error';
+    status.style.display = 'none';
+    return;
+  }
+  hint.textContent = 'Letters, numbers, underscores, periods · 3–20 characters';
+  hint.className = 'hint';
+  inp.className = '';
+
+  clearTimeout(unTimer);
+  status.style.display = 'flex';
+  dot.className = 'dot dot-checking';
+  txt.textContent = 'Checking…';
+
+  unTimer = setTimeout(() => {
+    const taken = TAKEN.includes(val.toLowerCase());
+    dot.className = taken ? 'dot dot-taken' : 'dot dot-available';
+    txt.textContent = taken ? `"${val}" is already taken` : `"${val}" is available`;
+    txt.style.color = taken ? 'var(--red)' : 'var(--green)';
+    inp.className = taken ? 'invalid' : 'valid';
+  }, 700);
+}
+
+function checkPromptUsername(inp) {
+  checkUsernameGeneric(inp,
+    document.getElementById('p-username-status'),
+    document.getElementById('p-status-dot'),
+    document.getElementById('p-status-text')
+  );
+}
+
+function checkUsernameGeneric(inp, status, dot, txt) {
+  const val = inp.value.trim();
+  const err = usernameError(val);
+  if (err) { inp.className = val ? 'invalid' : ''; status.style.display = 'none'; return; }
+  clearTimeout(unTimer);
+  status.style.display = 'flex';
+  dot.className = 'dot dot-checking'; txt.textContent = 'Checking…';
+  unTimer = setTimeout(() => {
+    const taken = TAKEN.includes(val.toLowerCase());
+    dot.className = taken ? 'dot dot-taken' : 'dot dot-available';
+    txt.textContent = taken ? `"${val}" is already taken` : `"${val}" is available`;
+    txt.style.color = taken ? 'var(--red)' : 'var(--green)';
+    inp.className = taken ? 'invalid' : 'valid';
+  }, 700);
+}
+
+function checkSettingsUsername(inp) {
+  const val = inp.value.trim();
+  const s = document.getElementById('settings-un-status');
+  const err = usernameError(val);
+  if (err) { s.textContent = err; s.style.color = 'var(--red)'; return; }
+  s.textContent = 'Checking…'; s.style.color = 'var(--text2)';
+  clearTimeout(unTimer);
+  unTimer = setTimeout(() => {
+    const taken = TAKEN.includes(val.toLowerCase()) && val !== 'aarnav_k';
+    s.textContent = taken ? 'Taken' : '✓ Available';
+    s.style.color = taken ? 'var(--red)' : 'var(--green)';
+  }, 700);
+}
+
+function validateEmail(inp) {
+  inp.className = inp.value.includes('@') ? 'valid' : '';
+}
+function validatePass(inp) {
+  const h = document.getElementById('pass-hint');
+  if (inp.value.length > 0 && inp.value.length < 8) {
+    h.textContent = 'Too short — 8 characters minimum';
+    h.className = 'hint error'; inp.className = 'invalid';
+  } else if (inp.value.length >= 8) {
+    h.textContent = 'Looks good!'; h.className = 'hint success'; inp.className = 'valid';
+  }
+}
+function validateConfirm(inp) {
+  const pass = document.getElementById('reg-pass').value;
+  inp.className = inp.value === pass && inp.value ? 'valid' : inp.value ? 'invalid' : '';
+}
+
+function doRegister() {
+  showToast('Account created! Check your email to verify.');
+  setTimeout(() => showView('prompt'), 800);
+}
+
+/* ─── PROMPT STEPS ────────────────────────────── */
+function promptNext(step) {
+  [1,2,3].forEach(i => {
+    document.getElementById('prompt-step' + i).style.display = 'none';
+    document.getElementById('pdot' + i).classList.remove('done');
+  });
+  for (let i = 1; i <= step; i++) document.getElementById('pdot' + i).classList.add('done');
+  document.getElementById('prompt-step' + step).style.display = 'block';
+  if (step === 3) {
+    const un = document.getElementById('p-username')?.value || 'aarnav_trades';
+    document.getElementById('confirm-name').textContent = '@' + un;
+    const av = document.getElementById('confirm-avatar');
+    av.textContent = un[0].toUpperCase();
+  }
+}
+
+/* ─── AVATAR SELECTOR ─────────────────────────── */
+function selectAvatar(el, cls, initials) {
+  document.querySelectorAll('.avatar-preset').forEach(a => a.classList.remove('selected'));
+  el.classList.add('selected');
+  const big = document.getElementById('profile-avatar-big');
+  big.className = 'avatar avatar-lg ' + cls;
+  const navav = document.querySelector('.nav-avatar');
+  navav.className = 'nav-avatar avatar ' + cls;
+  showToast('Avatar updated!');
+}
+
+/* ─── LEADERBOARD DATA ────────────────────────── */
+const LB_DATA = [
+  { rank:1, name:'stonks_wizard', initials:'SW', cls:'av-yellow', pct:'+14.23%', cash:'$94.2K', pos:true, me:false },
+  { rank:2, name:'market_bull',   initials:'MB', cls:'av-green',  pct:'+8.17%',  cash:'$97.1K', pos:true, me:false },
+  { rank:3, name:'aarnav_k',      initials:'AK', cls:'av-blue',   pct:'+2.85%',  cash:'$87.2K', pos:true, me:true  },
+  { rank:4, name:'quant_queen',   initials:'QQ', cls:'av-purple', pct:'+1.40%',  cash:'$99.8K', pos:true, me:false },
+  { rank:5, name:'bearish_beta',  initials:'BB', cls:'av-red',    pct:'-3.22%',  cash:'$103.1K',pos:false,me:false },
+  { rank:6, name:'hedge_hog',     initials:'HH', cls:'av-teal',   pct:'-7.55%',  cash:'$91.0K', pos:false,me:false },
+];
+
+const maxPct = 14.23;
+function renderLeaderboard() {
+  const list = document.getElementById('lb-list');
+  list.innerHTML = LB_DATA.map(u => {
+    const rankColor = u.rank===1 ? 'rgba(251,191,36,0.15)' : u.rank===2 ? 'rgba(156,163,175,0.12)' : u.rank===3 ? 'rgba(180,83,9,0.12)' : 'rgba(255,255,255,0.04)';
+    const rankText  = u.rank===1 ? '#fbbf24' : u.rank===2 ? '#9ca3af' : u.rank===3 ? '#cd7c3c' : 'var(--text3)';
+    const barPct = Math.abs(parseFloat(u.pct)) / maxPct * 100;
+    const barColor = u.pos ? '#4ade80' : '#f87171';
+    return `
+      <div class="lb-row ${u.me?'me':''}">
+        <div class="lb-rank" style="background:${rankColor};color:${rankText}">${u.rank}</div>
+        <div class="avatar avatar-sm ${u.cls}">${u.initials}</div>
+        <div style="flex:1;min-width:0">
+          <div class="lb-name">
+            ${u.name}${u.me ? '<span style="color:var(--accent);font-size:11px;font-weight:500;margin-left:6px;">you</span>' : ''}
+          </div>
+          <div class="lb-bar-wrap" style="margin-top:4px">
+            <div class="lb-bar-track" style="max-width:80px">
+              <div class="lb-bar-fill" style="width:${barPct}%;background:${barColor}"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="lb-pct" style="color:${u.pos?'var(--green)':'var(--red)'}">${u.pct}</div>
+          <div class="lb-cash">${u.cash}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ─── PROMPT AVATAR PRESETS ───────────────────── */
+function renderPromptPresets() {
+  const colors = ['av-blue','av-purple','av-green','av-orange','av-pink','av-teal','av-red','av-yellow'];
+  const emojis = ['🚀','💎','🐂','🦅','⚡','🎯','🔥','🌊'];
+  const wrap = document.getElementById('prompt-presets');
+  if (!wrap) return;
+  wrap.innerHTML = colors.map((c,i) => `
+    <div class="avatar-preset ${c} ${i===0?'selected':''}" onclick="selectPromptAvatar(this,'${c}')">
+      <span style="font-size:20px">${emojis[i]}</span>
+    </div>
+  `).join('');
+}
+function selectPromptAvatar(el, cls) {
+  document.querySelectorAll('.avatar-preset').forEach(a => a.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+/* ─── INIT ────────────────────────────────────── */
+renderLeaderboard();
+renderPromptPresets();
+</script>
+</body>
+</html>

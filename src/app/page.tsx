@@ -39,7 +39,8 @@ export default function Home() {
   // ── real market data state ────────────────────────────────────
   const [nvdaData, setNvdaData]   = useState<NvdaData | null>(null);
   const [tickerData, setTickerData] = useState<TickerItem[]>([]);
-  const [priceColor, setPriceColor] = useState<string>('#fff');
+  // Use a CSS variable so it's correct in both light and dark mode
+  const [priceColor, setPriceColor] = useState<string>('var(--vt-text)');
   const prevNvdaPrice = useRef<number>(0);
 
   // Vestera Prototype Animation Add-on — ticker visibility state
@@ -74,7 +75,7 @@ export default function Home() {
         const data: NvdaData = await res.json();
         if (prevNvdaPrice.current && data.price !== prevNvdaPrice.current) {
           setPriceColor(data.price >= prevNvdaPrice.current ? '#4ade80' : '#f87171');
-          setTimeout(() => { if (mounted) setPriceColor('#fff'); }, 600);
+          setTimeout(() => { if (mounted) setPriceColor('var(--vt-text)'); }, 600);
         }
         prevNvdaPrice.current = data.price;
         if (mounted) setNvdaData(data);
@@ -246,13 +247,13 @@ export default function Home() {
             <div className={styles.mockChart}>
               <svg viewBox="0 0 300 80" preserveAspectRatio="none">
                 <defs>
-                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#4f6ef7" stopOpacity="0.3"/>
+                  <linearGradient id="chartGradHero" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4f6ef7" stopOpacity="0.4"/>
                     <stop offset="100%" stopColor="#4f6ef7" stopOpacity="0"/>
                   </linearGradient>
                 </defs>
-                <path d="M0,65 L20,60 L40,55 L60,58 L80,45 L100,40 L120,35 L140,38 L160,25 L180,20 L200,22 L220,15 L240,18 L260,10 L280,8 L300,5" stroke="#4f6ef7" strokeWidth="2" fill="none"/>
-                <path d="M0,65 L20,60 L40,55 L60,58 L80,45 L100,40 L120,35 L140,38 L160,25 L180,20 L200,22 L220,15 L240,18 L260,10 L280,8 L300,5 L300,80 L0,80 Z" fill="url(#chartGrad)"/>
+                <path d="M0,65 L20,60 L40,55 L60,58 L80,45 L100,40 L120,35 L140,38 L160,25 L180,20 L200,22 L220,15 L240,18 L260,10 L280,8 L300,5" stroke="#4f6ef7" strokeWidth="2.5" fill="none"/>
+                <path d="M0,65 L20,60 L40,55 L60,58 L80,45 L100,40 L120,35 L140,38 L160,25 L180,20 L200,22 L220,15 L240,18 L260,10 L280,8 L300,5 L300,80 L0,80 Z" fill="url(#chartGradHero)"/>
               </svg>
             </div>
             <div className={styles.mockGrid}>
