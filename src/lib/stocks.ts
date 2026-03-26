@@ -9,7 +9,7 @@ export const STOCKS = [
     'QCOM', 'ADSK', 'SNPS', 'CDNS', 'MCHP', 'KLAC', 'LRCX', 'AMAT', 'LSCC', 'MPWR',
     'GE', 'BA', 'CAT', 'DE', 'MMM', 'HON', 'ABB', 'EATON', 'ETN', 'ITW',
     'WMT', 'KO', 'PEP', 'MCD', 'SBUX', 'DPZ', 'CPRT', 'YUM', 'CMG', 'ULTA',
-    'JPM', 'BAC', 'WFC', 'GS', 'MS', 'BLK', 'SCHW', 'TD', 'RY', 'BNS',
+    'JPM', 'BAC', 'WFC', 'GS', 'MS', 'BLK', 'SCHW', 'TD', 'RY', 'BNS', 'V', 'MA',
     'XOM', 'CVX', 'COP', 'EOG', 'MPC', 'PSX', 'VLO', 'HES', 'OXY', 'SLB',
     'PG', 'UN', 'COST', 'MO', 'PM', 'BTC-USD', 'ETH-USD'
 ];
@@ -121,6 +121,7 @@ export const STOCK_NAMES: Record<string, string> = {
     'CMG': 'Chipotle Mexican', 'ULTA': 'Ulta Beauty Inc', 'JPM': 'JPMorgan Chase', 'BAC': 'Bank of America',
     'WFC': 'Wells Fargo', 'GS': 'Goldman Sachs', 'MS': 'Morgan Stanley', 'BLK': 'BlackRock Inc.',
     'SCHW': 'Schwab Corp', 'TD': 'Toronto Dominion', 'RY': 'Royal Bank Can', 'BNS': 'Bank Nova Scotia',
+    'V': 'Visa Inc.', 'MA': 'Mastercard Inc.',
     'XOM': 'Exxon Mobil', 'CVX': 'Chevron Corp', 'COP': 'ConocoPhillips', 'EOG': 'EOG Resources',
     'MPC': 'Marathon Petro', 'PSX': 'Phillips 66', 'VLO': 'Valero Energy', 'HES': 'Hess Corp',
     'OXY': 'Occidental Petro', 'SLB': 'Schlumberger', 'PG': 'Procter & Gamble', 'UN': 'Unilever PLC',

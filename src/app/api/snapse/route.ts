@@ -4,9 +4,8 @@ import { addChatMessage, getUserCash, getHoldings } from '@/lib/models';
 import { getCurrentPrice } from '@/lib/stocks';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 export async function POST(request: Request) {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const session = await getSession();
     if (!session.userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
