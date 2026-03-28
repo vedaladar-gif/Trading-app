@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LEVELS, type LessonUnit, type Level } from '@/lib/learningContent';
 import styles from './learn.module.css';
-import VLogo from '@/components/VLogo';
+import DashNav from '@/components/DashNav';
 
 interface Progress {
     [key: string]: { completed: boolean; quizScore?: number; quizPassed?: boolean };
@@ -86,11 +85,6 @@ export default function LearningDashboard() {
         }
     };
 
-    const handleLogout = async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        router.push('/');
-    };
-
     const formatContent = (text: string) =>
         text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br/>');
 
@@ -98,19 +92,7 @@ export default function LearningDashboard() {
 
     return (
         <div className={styles.learnWrap}>
-            {/* Nav */}
-            <nav className={styles.learnNav}>
-                <Link href="/" className={styles.brand}>
-                    <VLogo size={30} />
-                    Vestera
-                </Link>
-                <div className={styles.navLinks}>
-                    <Link href="/trade">Trade</Link>
-                    <Link href="/stats">Stats</Link>
-                    <Link href="/learn">Learn</Link>
-                    <button onClick={handleLogout} className={styles.logoutBtn}>Logout</button>
-                </div>
-            </nav>
+            <DashNav onLogout={() => router.push('/')} />
 
             <div className={styles.content}>
 

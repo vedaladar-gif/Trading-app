@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './trade.module.css';
-import VLogo from '@/components/VLogo';
 import { buildChartOptions, getChartColors, isThemeDark } from '@/lib/chartTheme';
 import { useMarketStatus } from '@/hooks/useMarketStatus';
+import DashNav from '@/components/DashNav';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -494,11 +493,6 @@ export default function TradingDashboard() {
         } catch { /* optimistic delete */ }
     };
 
-    const handleLogout = async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        router.push('/');
-    };
-
     const unlockOhlc = () => {
         ohlcLockedRef.current = false;
         setOhlcLocked(false);
@@ -527,18 +521,7 @@ export default function TradingDashboard() {
 
     return (
         <div className={styles.dashWrap}>
-            <nav className={styles.dashNav}>
-                <Link href="/" className={styles.brand}>
-                    <VLogo size={30} />
-                    Vestera
-                </Link>
-                <div className={styles.navLinks}>
-                    <Link href="/trade">Trade</Link>
-                    <Link href="/stats">Stats</Link>
-                    <Link href="/learn">Learn</Link>
-                    <button onClick={handleLogout} className={styles.logoutBtn}>Logout</button>
-                </div>
-            </nav>
+            <DashNav onLogout={() => router.push('/')} />
 
             <div className={styles.dashGrid}>
 
