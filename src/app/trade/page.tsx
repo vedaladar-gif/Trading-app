@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import styles from './trade.module.css';
 import VLogo from '@/components/VLogo';
 import { buildChartOptions, getChartColors, isThemeDark } from '@/lib/chartTheme';
+import { useMarketStatus } from '@/hooks/useMarketStatus';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -67,16 +68,6 @@ const WATCHLIST_BASE: WatchItem[] = [
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const getMarketStatus = () => {
-    const now = new Date();
-    const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    const day = et.getDay();
-    const time = et.getHours() * 60 + et.getMinutes();
-    if (day === 0 || day === 6) return { open: false, label: 'Market Closed', sub: 'Opens Monday 9:30 AM ET' };
-    if (time < 570) return { open: false, label: 'Market Closed', sub: 'Opens at 9:30 AM ET' };
-    if (time >= 570 && time < 960) return { open: true, label: 'Market Open', sub: 'Closes at 4:00 PM ET' };
-    return { open: false, label: 'Market Closed', sub: 'Opens tomorrow 9:30 AM ET' };
-};
 
 // ── Component ──────────────────────────────────────────────────────────────
 
@@ -125,7 +116,8 @@ export default function TradingDashboard() {
     const router = useRouter();
     const priceIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const watchlistIntervalRef = useRef<NodeJS.Timeout | null>(null);
-    const marketStatus = getMarketStatus();
+    // Live market status — re-evaluates every 60 s via the hook
+    const marketStatus = useMarketStatus();
 
     // ── 1. Auth gate ──────────────────────────────────────────────────────────
     useEffect(() => {

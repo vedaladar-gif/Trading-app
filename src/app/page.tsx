@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import VLogo from '@/components/VLogo';
+import { useMarketStatus } from '@/hooks/useMarketStatus';
 
 /* ── display helpers ─────────────────────────────────────── */
 interface NvdaData {
@@ -42,6 +43,7 @@ export default function Home() {
   // Use a CSS variable so it's correct in both light and dark mode
   const [priceColor, setPriceColor] = useState<string>('var(--vt-text)');
   const prevNvdaPrice = useRef<number>(0);
+  const marketStatus = useMarketStatus();
 
   // Vestera Prototype Animation Add-on — ticker visibility state
   const [tickerVisible, setTickerVisible] = useState(true);
@@ -231,7 +233,23 @@ export default function Home() {
                   <div className={styles.mockTickerSub}>NVIDIA Corp</div>
                 </div>
               </div>
-              <div className={styles.mockBadge}>● Live</div>
+              <div
+                className={styles.mockBadge}
+                style={{
+                  background: marketStatus.open ? 'rgba(74,222,128,0.10)' : 'rgba(248,113,113,0.10)',
+                  border: `1px solid ${marketStatus.open ? 'rgba(74,222,128,0.25)' : 'rgba(248,113,113,0.25)'}`,
+                  color: marketStatus.open ? '#4ade80' : '#f87171',
+                }}
+              >
+                <span style={{
+                  display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
+                  background: marketStatus.open ? '#4ade80' : '#f87171',
+                  marginRight: 5,
+                  boxShadow: marketStatus.open ? '0 0 6px #4ade80' : 'none',
+                  animation: marketStatus.open ? 'pulse 2s ease-in-out infinite' : 'none',
+                }} />
+                {marketStatus.label}
+              </div>
             </div>
             <div className={styles.mockPrice} style={{ color: priceColor }}>
               {nvdaData ? fmt$(nvdaData.price) : '—'}
