@@ -152,3 +152,12 @@ export function getMarketStatus(now: Date = new Date()): MarketStatus {
   // After close
   return { open: false, label: 'Market Closed', sub: nextOpenText(dateStr) };
 }
+
+/** User-facing copy when blocking trades outside session (keep in sync with API). */
+export const MARKET_CLOSED_TRADE_MESSAGE =
+  "You can't place a trade right now because the market is closed. Please come back when it is open.";
+
+/** True when U.S. regular session is open (same rules as getMarketStatus). */
+export function isMarketOpen(now: Date = new Date()): boolean {
+  return getMarketStatus(now).open;
+}

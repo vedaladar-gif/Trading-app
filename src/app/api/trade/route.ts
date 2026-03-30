@@ -2,11 +2,19 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { getUserCash, getHoldings, updateUserCash, addTrade } from '@/lib/models';
 import { STOCKS } from '@/lib/stocks';
+import { isMarketOpen, MARKET_CLOSED_TRADE_MESSAGE } from '@/lib/marketStatus';
 
 export async function POST(request: Request) {
     const session = await getSession();
     if (!session.userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!isMarketOpen()) {
+        return NextResponse.json(
+            { success: false, error: 'MARKET_CLOSED', message: MARKET_CLOSED_TRADE_MESSAGE },
+            { status: 403 },
+        );
     }
 
     const userId = session.userId;

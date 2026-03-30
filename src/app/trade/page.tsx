@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from './trade.module.css';
 import { buildChartOptions, getChartColors, isThemeDark } from '@/lib/chartTheme';
 import { useMarketStatus } from '@/hooks/useMarketStatus';
+import { isMarketOpen, MARKET_CLOSED_TRADE_MESSAGE } from '@/lib/marketStatus';
 import DashNav from '@/components/DashNav';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -104,6 +105,8 @@ export default function TradingDashboard() {
     const [alertMsg, setAlertMsg] = useState('');
     const [alertMsgType, setAlertMsgType] = useState<'success' | 'error'>('success');
     const [alertSaving, setAlertSaving] = useState(false);
+    const [marketClosedToast, setMarketClosedToast] = useState<string | null>(null);
+    const marketClosedToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const chartRef = useRef<HTMLDivElement>(null);
     const chartInstanceRef = useRef<ReturnType<typeof import('lightweight-charts').createChart> | null>(null);
@@ -433,16 +436,47 @@ export default function TradingDashboard() {
         setPrice(0);
     };
 
+    const showMarketClosedToast = useCallback(() => {
+        if (marketClosedToastTimer.current) clearTimeout(marketClosedToastTimer.current);
+        setMarketClosedToast(MARKET_CLOSED_TRADE_MESSAGE);
+        marketClosedToastTimer.current = setTimeout(() => {
+            setMarketClosedToast(null);
+            marketClosedToastTimer.current = null;
+        }, 8000);
+    }, []);
+
+    useEffect(() => () => {
+        if (marketClosedToastTimer.current) clearTimeout(marketClosedToastTimer.current);
+    }, []);
+
+    const dismissMarketClosedToast = useCallback(() => {
+        if (marketClosedToastTimer.current) {
+            clearTimeout(marketClosedToastTimer.current);
+            marketClosedToastTimer.current = null;
+        }
+        setMarketClosedToast(null);
+    }, []);
+
     const executeTrade = async (action: 'BUY' | 'SELL') => {
         if (!price || quantity <= 0) return;
+        // Client check (instant feedback); server re-checks on every POST.
+        if (!isMarketOpen()) {
+            showMarketClosedToast();
+            return;
+        }
         setStatusMsg('');
         try {
             const res = await fetch('/api/trade', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ticker, quantity, price, action }),
+                credentials: 'same-origin',
             });
-            const data = await res.json();
+            const data = await res.json().catch(() => ({}));
+            if (res.status === 403 && data.error === 'MARKET_CLOSED') {
+                showMarketClosedToast();
+                return;
+            }
             if (data.success) {
                 setStatusMsg(`${action} ${quantity} ${ticker} @ $${price.toFixed(2)}`);
                 setStatusType('success');
@@ -453,7 +487,7 @@ export default function TradingDashboard() {
                     created_at: new Date().toISOString(),
                 }, ...prev].slice(0, 10));
             } else {
-                setStatusMsg(data.error);
+                setStatusMsg(typeof data.error === 'string' ? data.error : 'Trade failed');
                 setStatusType('error');
             }
         } catch {
@@ -855,6 +889,25 @@ export default function TradingDashboard() {
                     )}
                 </div>
             </div>
+
+            {marketClosedToast && (
+                <div className={styles.marketClosedToast} role="alert">
+                    <div className={styles.marketClosedToastCard}>
+                        <div className={styles.marketClosedToastHead}>
+                            <span className={styles.marketClosedToastLabel}>Trading unavailable</span>
+                            <button
+                                type="button"
+                                className={styles.marketClosedToastClose}
+                                onClick={dismissMarketClosedToast}
+                                aria-label="Dismiss"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <p className={styles.marketClosedToastBody}>{marketClosedToast}</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
