@@ -22,7 +22,7 @@ export default function Navbar() {
     const hasSelfNav = SELF_NAV.some(p => pathname === p || pathname.startsWith(p + '/'));
 
     useEffect(() => {
-        fetch('/api/auth/me')
+        fetch('/api/auth/me', { credentials: 'same-origin' })
             .then(res => res.json())
             .then(data => {
                 setAuthenticated(data.authenticated);

@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -9,8 +8,22 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [info, setInfo] = useState('');
+    const [successBanner, setSuccessBanner] = useState('');
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
+
+    // Post-registration redirect: ?registered=1 (& optional verify=1)
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('registered') === '1') {
+            let msg = 'Account created successfully. Please log in.';
+            if (params.get('verify') === '1') {
+                msg += ' Check your email and confirm your address first if your project requires email verification.';
+            }
+            setSuccessBanner(msg);
+            window.history.replaceState({}, '', '/login');
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,13 +35,22 @@ export default function LoginPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
+                credentials: 'same-origin',
             });
-            const data = await res.json();
-            if (data.success) {
-                router.push(data.needsUsername ? '/setup-username' : '/trade');
-            } else {
-                setError(data.error || 'Login failed');
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                setError((data as { error?: string }).error || 'Login failed');
+                setLoading(false);
+                return;
             }
+            if (data.success === true) {
+                // Full navigation so the iron-session cookie is always attached before
+                // middleware + RSC run (avoids client-transition race / “log in twice”).
+                const target = data.needsUsername ? '/setup-username' : '/trade';
+                window.location.assign(target);
+                return;
+            }
+            setError('Login failed');
         } catch {
             setError('Network error. Please try again.');
         }
@@ -47,6 +69,7 @@ export default function LoginPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: username.trim() }),
+                credentials: 'same-origin',
             });
             const data = await res.json();
             if (!res.ok) {
@@ -108,6 +131,14 @@ export default function LoginPage() {
                     <p style={{ fontSize: '14px', color: 'var(--vt-text2)', margin: 0 }}>Sign in to your Vestera account</p>
                 </div>
 
+                {successBanner && (
+                    <div style={{
+                        background: 'rgba(74,222,128,0.08)',
+                        border: '1px solid rgba(74,222,128,0.25)',
+                        borderRadius: '8px', padding: '12px 14px',
+                        marginBottom: '16px', fontSize: '13px', color: '#4ade80', lineHeight: 1.5,
+                    }}>{successBanner}</div>
+                )}
                 {error && (
                     <div style={{
                         background: 'rgba(239,68,68,0.08)',
@@ -134,6 +165,7 @@ export default function LoginPage() {
                             onChange={e => setUsername(e.target.value)}
                             placeholder="you@example.com"
                             required
+                            autoComplete="email"
                             style={inputStyle}
                         />
                     </div>
@@ -145,6 +177,7 @@ export default function LoginPage() {
                             onChange={e => setPassword(e.target.value)}
                             placeholder="••••••••"
                             required
+                            autoComplete="current-password"
                             style={inputStyle}
                         />
                     </div>

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getIronSession } from 'iron-session';
 import type { SessionData } from './lib/session';
 
-const protectedPagePaths = ['/trade', '/stats', '/learn', '/learn-unit', '/learn-quiz', '/dashboard'];
+const protectedPagePaths = ['/trade', '/stats', '/learn', '/learn-unit', '/learn-quiz', '/dashboard', '/settings', '/setup-username'];
 const protectedApiPaths = ['/api/trade', '/api/holdings', '/api/analyze-stock', '/api/delete-account', '/api/snapse'];
 
 export async function middleware(request: NextRequest) {
@@ -40,6 +40,10 @@ export const config = {
         '/learn-unit/:path*',
         '/learn-quiz/:path*',
         '/dashboard/:path*',
+        '/settings',
+        '/settings/:path*',
+        '/setup-username',
+        '/setup-username/:path*',
         '/api/trade/:path*',
         '/api/holdings/:path*',
         '/api/analyze-stock/:path*',

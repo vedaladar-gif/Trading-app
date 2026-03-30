@@ -169,7 +169,7 @@ function AlertPoller() {
         const poll = async () => {
             try {
                 // Only poll if the user is authenticated
-                const meRes = await fetch('/api/auth/me');
+                const meRes = await fetch('/api/auth/me', { credentials: 'same-origin' });
                 const me = await meRes.json();
                 if (!me.authenticated) {
                     timeout = setTimeout(poll, POLL_MS);

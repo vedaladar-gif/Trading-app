@@ -52,15 +52,25 @@ export default function StatsPage() {
     const router = useRouter();
 
     useEffect(() => {
-        fetch('/api/auth/me')
-            .then(r => r.json())
-            .then(data => {
-                if (!data.authenticated) router.replace('/login');
-                else setAuthChecked(true);
-            })
-            .catch(() => router.replace('/login'));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+                if (cancelled) return;
+                if (!res.ok) {
+                    router.replace('/login');
+                    return;
+                }
+                const data = await res.json();
+                if (cancelled) return;
+                if (data.authenticated === true) setAuthChecked(true);
+                else router.replace('/login');
+            } catch {
+                if (!cancelled) router.replace('/login');
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [router]);
 
     useEffect(() => {
         if (!authChecked) return;

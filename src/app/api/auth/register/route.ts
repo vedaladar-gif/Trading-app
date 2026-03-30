@@ -67,7 +67,10 @@ export async function POST(request: Request) {
             console.error('createProfile error during register:', profileError);
         }
 
-        return NextResponse.json({ success: true });
+        // No session until email is confirmed (when Supabase email confirmation is on)
+        const emailConfirmationRequired = !data.session;
+
+        return NextResponse.json({ success: true, emailConfirmationRequired });
     } catch (e) {
         console.error('Register error:', e);
         return NextResponse.json({ error: 'Registration failed' }, { status: 500 });

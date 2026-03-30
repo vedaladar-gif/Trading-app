@@ -68,10 +68,21 @@ export default function SettingsPage() {
 
     // Auth gate
     useEffect(() => {
-        fetch('/api/auth/me')
-            .then(r => r.json())
-            .then(data => {
-                if (!data.authenticated) { router.replace('/login'); return; }
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+                if (cancelled) return;
+                if (!res.ok) {
+                    router.replace('/login');
+                    return;
+                }
+                const data = await res.json();
+                if (cancelled) return;
+                if (data.authenticated !== true) {
+                    router.replace('/login');
+                    return;
+                }
                 setUserId(data.userId);
                 const p: Profile = {
                     username:    data.username    || '',
@@ -84,8 +95,11 @@ export default function SettingsPage() {
                 setEditDisplayName(p.displayName || '');
                 setEditAvatarColor(p.avatarColor);
                 setAuthChecked(true);
-            })
-            .catch(() => router.replace('/login'));
+            } catch {
+                if (!cancelled) router.replace('/login');
+            }
+        })();
+        return () => { cancelled = true; };
     }, [router]);
 
     // Username live check

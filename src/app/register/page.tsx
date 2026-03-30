@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { USERNAME_REGEX } from '@/lib/avatarColors';
 
 const inputStyle: React.CSSProperties = {
@@ -31,7 +32,7 @@ export default function RegisterPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
+    const router = useRouter();
     const [unStatus, setUnStatus] = useState<UnStatus>('idle');
     const [unError, setUnError] = useState('');
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,13 +76,16 @@ export default function RegisterPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: username.trim(), email: email.trim(), password }),
+                credentials: 'same-origin',
             });
             const data = await res.json();
             if (data.success) {
-                setSubmitted(true);
-            } else {
-                setError(data.error || 'Registration failed');
+                const q = new URLSearchParams({ registered: '1' });
+                if (data.emailConfirmationRequired) q.set('verify', '1');
+                router.replace(`/login?${q.toString()}`);
+                return;
             }
+            setError(data.error || 'Registration failed');
         } catch {
             setError('Network error. Please try again.');
         }
@@ -91,30 +95,6 @@ export default function RegisterPage() {
     const unBorderColor = unStatus === 'available' ? 'rgba(74,222,128,0.5)'
         : unStatus === 'taken' || unStatus === 'invalid' ? 'rgba(248,113,113,0.5)'
         : 'var(--vt-border)';
-
-    if (submitted) {
-        return (
-            <div style={{ minHeight: '100vh', background: 'var(--vt-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', margin: '-48px -24px 0', padding: '24px' }}>
-                <div style={{ width: '100%', maxWidth: '420px', background: 'var(--vt-surface)', border: '1px solid var(--vt-border)', borderRadius: '20px', padding: '48px 40px', textAlign: 'center' }}>
-                    <div style={{ width: '64px', height: '64px', background: 'rgba(79,110,247,0.1)', border: '1px solid rgba(79,110,247,0.2)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: '28px' }}>📧</div>
-                    <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--vt-text)', margin: '0 0 10px', letterSpacing: '-0.5px' }}>Check your email</h1>
-                    <p style={{ fontSize: '14px', color: 'var(--vt-text2)', margin: '0 0 8px', lineHeight: 1.6 }}>We sent a confirmation link to</p>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#7d9bff', margin: '0 0 24px' }}>{email}</p>
-                    <p style={{ fontSize: '13px', color: 'var(--vt-text3)', margin: '0 0 32px', lineHeight: 1.6 }}>Click the link in your email to activate your account. Check your spam folder if you don&apos;t see it.</p>
-                    <div style={{ background: 'var(--vt-input-bg)', border: '1px solid var(--vt-border2)', borderRadius: '12px', padding: '16px', marginBottom: '28px', textAlign: 'left' }}>
-                        {[{ step: '1', text: 'Open your email inbox' }, { step: '2', text: 'Find the email from Vestera' }, { step: '3', text: 'Click "Confirm your email"' }, { step: '4', text: "You're in — go to login!" }].map(item => (
-                            <div key={item.step} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0', borderBottom: item.step !== '4' ? '1px solid var(--vt-border3)' : 'none' }}>
-                                <div style={{ width: '22px', height: '22px', background: 'rgba(79,110,247,0.15)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#4f6ef7', flexShrink: 0 }}>{item.step}</div>
-                                <span style={{ fontSize: '13px', color: 'var(--vt-text2)' }}>{item.text}</span>
-                            </div>
-                        ))}
-                    </div>
-                    <Link href="/login" style={{ display: 'block', padding: '12px', background: '#4f6ef7', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>Go to Login</Link>
-                    <p style={{ fontSize: '11px', color: 'var(--vt-text3)', margin: 0 }}>For educational purposes only. Not financial advice.</p>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--vt-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, sans-serif', margin: '-48px -24px 0', padding: '24px' }}>

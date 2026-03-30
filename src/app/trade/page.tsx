@@ -118,17 +118,27 @@ export default function TradingDashboard() {
     // Live market status — re-evaluates every 60 s via the hook
     const marketStatus = useMarketStatus();
 
-    // ── 1. Auth gate ──────────────────────────────────────────────────────────
+    // ── 1. Auth gate (wait for /me; only redirect when definitively unauthenticated) ─
     useEffect(() => {
-        fetch('/api/auth/me')
-            .then(r => r.json())
-            .then(data => {
-                if (!data.authenticated) router.replace('/login');
-                else setAuthChecked(true);
-            })
-            .catch(() => router.replace('/login'));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+                if (cancelled) return;
+                if (!res.ok) {
+                    router.replace('/login');
+                    return;
+                }
+                const data = await res.json();
+                if (cancelled) return;
+                if (data.authenticated === true) setAuthChecked(true);
+                else router.replace('/login');
+            } catch {
+                if (!cancelled) router.replace('/login');
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [router]);
 
     // ── 2. Prefill ticker from ?ticker= URL param ─────────────────────────────
     useEffect(() => {

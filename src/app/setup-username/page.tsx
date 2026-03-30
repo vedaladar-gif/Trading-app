@@ -20,14 +20,31 @@ export default function SetupUsernamePage() {
 
     // Auth gate: redirect if not logged in or already has a real username
     useEffect(() => {
-        fetch('/api/auth/me')
-            .then(r => r.json())
-            .then(data => {
-                if (!data.authenticated) { router.replace('/login'); return; }
-                if (!isEmailUsername(data.username)) { router.replace('/trade'); return; }
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+                if (cancelled) return;
+                if (!res.ok) {
+                    router.replace('/login');
+                    return;
+                }
+                const data = await res.json();
+                if (cancelled) return;
+                if (data.authenticated !== true) {
+                    router.replace('/login');
+                    return;
+                }
+                if (!isEmailUsername(data.username)) {
+                    window.location.assign('/trade');
+                    return;
+                }
                 setAuthChecked(true);
-            })
-            .catch(() => router.replace('/login'));
+            } catch {
+                if (!cancelled) router.replace('/login');
+            }
+        })();
+        return () => { cancelled = true; };
     }, [router]);
 
     const checkUsername = (val: string) => {
@@ -62,7 +79,7 @@ export default function SetupUsernamePage() {
             });
             const data = await res.json();
             if (!data.success) { setError(data.error || 'Failed to save'); setSaving(false); return; }
-            router.push('/trade');
+            window.location.assign('/trade');
         } catch {
             setError('Network error. Please try again.');
             setSaving(false);

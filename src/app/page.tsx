@@ -53,7 +53,7 @@ export default function Home() {
 
   // ── auth effect ──────────────────────────────────────────────
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { credentials: 'same-origin' })
       .then(res => res.json())
       .then(async data => {
         setAuthenticated(data.authenticated);
