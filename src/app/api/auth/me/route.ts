@@ -22,5 +22,6 @@ export async function GET() {
         avatarColor: user.avatar_color || 'blue',
         theme: user.theme || 'dark',
         needsUsername: isEmailUsername(user.username),
+        termsAccepted: user.terms_accepted_at != null && user.terms_accepted_at !== '',
     });
 }

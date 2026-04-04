@@ -17,6 +17,9 @@ create table if not exists public.portfolio (
   created_at timestamptz not null default now()
 );
 
+-- Terms acceptance (run migrations for existing DBs; safe for new installs)
+alter table public.profiles add column if not exists terms_accepted_at timestamptz;
+
 -- Chat messages table
 create table if not exists public.chat_messages (
   id bigserial primary key,

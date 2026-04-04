@@ -510,15 +510,143 @@
     font-weight: 600;
 }
 .backBtn:hover { color: #7d9bff; }
-.viewerTitle {
+
+/* ── Lesson title row + quiz (above tabs, always visible) ───── */
+.lessonHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.lessonHeaderTitle {
     font-family: 'Inter', sans-serif;
-    margin: 0 0 24px;
+    margin: 0;
     font-size: 26px;
     font-weight: 800;
     color: var(--vt-text);
     letter-spacing: -1px;
     line-height: 1.2;
+    flex: 1 1 200px;
+    min-width: 0;
 }
+.lessonQuizBtn {
+    flex-shrink: 0;
+    padding: 12px 24px;
+    background: #4f6ef7;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+.lessonQuizBtn:hover {
+    background: #3d5ce8;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(79,110,247,0.3);
+}
+
+/* ── Lesson inner tabs (Concepts · Video) ─────────────────── */
+.lessonTabBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 0;
+    border-bottom: 1px solid var(--vt-border2);
+}
+.lessonTabBtn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--vt-text3);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.lessonTabBtn:hover {
+    color: var(--vt-text2);
+    background: var(--vt-hover);
+}
+.lessonTabBtnActive {
+    color: var(--vt-text);
+}
+.lessonContentWrapper {
+    min-height: 280px;
+    transition: opacity 0.2s ease;
+}
+.lessonTabPanel {
+    animation: lessonPanelFade 0.22s ease;
+}
+@keyframes lessonPanelFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.videoPlaceholder {
+    max-width: 520px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 8px 0 24px;
+}
+.videoPlaceholderFrame {
+    aspect-ratio: 16 / 9;
+    max-height: 280px;
+    margin: 0 auto 24px;
+    border-radius: 14px;
+    background: var(--vt-input-bg);
+    border: 1px solid var(--vt-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px var(--vt-border2);
+}
+.videoPlaceholderIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--vt-surface);
+    border: 2px solid var(--vt-border);
+    color: var(--vt-text3);
+    font-size: 22px;
+    line-height: 64px;
+    text-align: center;
+    padding-left: 4px;
+    opacity: 0.85;
+}
+.videoPlaceholderTitle {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--vt-text);
+    letter-spacing: -0.3px;
+}
+.videoPlaceholderLesson {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: var(--vt-text2);
+    line-height: 1.5;
+}
+.videoPlaceholderHint {
+    margin: 0;
+    font-size: 13px;
+    color: var(--vt-text3);
+    line-height: 1.65;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .unitContent {
     font-size: 15px;
     color: var(--vt-text2);
@@ -653,4 +781,7 @@
     .learnHero { flex-direction: column; align-items: flex-start; gap: 16px; }
     .heroStats { gap: 12px; }
     .heroTitle { font-size: 24px; }
+    .lessonHeader { flex-direction: column; align-items: stretch; }
+    .lessonHeaderTitle { font-size: 22px; }
+    .lessonQuizBtn { width: 100%; text-align: center; white-space: normal; }
 }

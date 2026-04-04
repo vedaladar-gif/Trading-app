@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import TermsGate from "@/components/TermsGate";
 import SnapseWidget from "@/components/SnapseWidget";
 import ThemeProvider from "@/components/ThemeProvider";
 import { AlertToastProvider } from "@/components/AlertToastProvider";
@@ -36,6 +37,7 @@ export default function RootLayout({
         <AlertToastProvider>
           <ThemeProvider />
           <Navbar />
+          <TermsGate />
           <div className="container">
             {children}
           </div>

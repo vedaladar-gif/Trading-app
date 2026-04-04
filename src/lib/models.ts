@@ -12,6 +12,8 @@ export interface User {
     display_name: string | null;
     avatar_color: string;
     theme: string;
+    /** ISO timestamp when user accepted Terms & Conditions; null if not yet accepted */
+    terms_accepted_at?: string | null;
 }
 
 export interface Trade {
@@ -48,7 +50,7 @@ export interface ChatMessage {
 export async function getUserById(userId: string): Promise<User | null> {
     const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, cash, created_at, display_name, avatar_color, theme')
+        .select('id, username, cash, created_at, display_name, avatar_color, theme, terms_accepted_at')
         .eq('id', userId)
         .maybeSingle();
     if (error) {
@@ -88,6 +90,18 @@ export async function createProfile(userId: string, username: string, startingCa
     }
 
     return data as User | null;
+}
+
+export async function acceptUserTerms(userId: string): Promise<boolean> {
+    const { error } = await supabase
+        .from('profiles')
+        .update({ terms_accepted_at: new Date().toISOString() })
+        .eq('id', userId);
+    if (error) {
+        console.error('acceptUserTerms error:', error);
+        return false;
+    }
+    return true;
 }
 
 export async function updateUserCash(userId: string, newCash: number): Promise<void> {

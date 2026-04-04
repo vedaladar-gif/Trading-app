@@ -48,6 +48,7 @@ export const config = {
         '/api/holdings/:path*',
         '/api/analyze-stock/:path*',
         '/api/delete-account/:path*',
+        '/api/snapse',
         '/api/snapse/:path*',
     ],
 };

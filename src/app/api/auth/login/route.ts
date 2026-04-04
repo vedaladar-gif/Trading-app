@@ -38,7 +38,7 @@ export async function POST(request: Request) {
             const { data: profileData, error: profileError } = await authedClient
                 .from('profiles')
                 .insert({ id: data.user.id, username: metaUsername, cash: STARTING_CASH })
-                .select('id, username, cash, created_at, display_name, avatar_color, theme')
+                .select('id, username, cash, created_at, display_name, avatar_color, theme, terms_accepted_at')
                 .maybeSingle();
 
             if (profileError) {

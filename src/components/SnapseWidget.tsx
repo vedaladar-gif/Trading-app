@@ -9,10 +9,23 @@ interface Message {
     content: string;
 }
 
+function tickerFromWindow(): string {
+    if (typeof window === 'undefined') return '';
+    try {
+        return (new URLSearchParams(window.location.search).get('ticker') || '').toUpperCase();
+    } catch {
+        return '';
+    }
+}
+
 export default function SnapseWidget() {
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'assistant', content: "Hi! I'm **Snapse**, your AI investing assistant. I can see your portfolio and help you analyze stocks, understand concepts, or answer any investing questions. What would you like to know?" }
+        {
+            role: 'assistant',
+            content:
+                "Hi! I'm **Snapse**, your Vestera investing coach. Ask about markets, concepts, your **paper portfolio**, or a stock you're learning about — I'll keep it educational and clear. What would you like to explore?",
+        },
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -24,33 +37,75 @@ export default function SnapseWidget() {
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    }, [messages, loading]);
 
-    const sendMessage = async () => {
-        if (!input.trim() || loading) return;
-        const userMsg = input.trim();
+    const sendMessageWithText = async (raw: string) => {
+        const trimmed = raw.trim();
+        if (!trimmed || loading) return;
+
+        let snapshot: Message[] = [];
+        setMessages(prev => {
+            snapshot = [...prev, { role: 'user', content: trimmed }];
+            return snapshot;
+        });
         setInput('');
-        setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
         setLoading(true);
 
         try {
             const res = await fetch('/api/snapse', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMsg, mode, route: pathname }),
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    messages: snapshot,
+                    mode,
+                    route: pathname,
+                    stockSymbol: tickerFromWindow(),
+                }),
             });
-            const data = await res.json();
+
+            let data: { reply?: string; error?: string } = {};
+            try {
+                data = await res.json();
+            } catch {
+                data = {};
+            }
+
             if (res.status === 401) {
-                setMessages(prev => [...prev, { role: 'assistant', content: 'Please **sign in** to use Snapse. Your session may have expired.' }]);
-            } else if (data.reply) {
-                setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+                setMessages(prev => [
+                    ...prev,
+                    {
+                        role: 'assistant',
+                        content:
+                            'Please **sign in** to use Snapse. If you were logged in, your session may have expired — try refreshing the page.',
+                    },
+                ]);
+            } else if (typeof data.reply === 'string' && data.reply.trim()) {
+                setMessages(prev => [...prev, { role: 'assistant', content: data.reply!.trim() }]);
             } else {
-                setMessages(prev => [...prev, { role: 'assistant', content: `Sorry, something went wrong. (${data.error ?? 'unknown error'})` }]);
+                const detail =
+                    typeof data.error === 'string' && data.error.trim()
+                        ? data.error.trim()
+                        : `Something went wrong (${res.status}).`;
+                setMessages(prev => [
+                    ...prev,
+                    {
+                        role: 'assistant',
+                        content: `Sorry — ${detail} You can try again in a moment.`,
+                    },
+                ]);
             }
         } catch {
-            setMessages(prev => [...prev, { role: 'assistant', content: 'Network error. Please try again.' }]);
+            setMessages(prev => [
+                ...prev,
+                {
+                    role: 'assistant',
+                    content: '**Network error.** Check your connection and try again.',
+                },
+            ]);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const formatContent = (text: string) => {
@@ -60,8 +115,8 @@ export default function SnapseWidget() {
     };
 
     const quickPrompts = isTrading
-        ? ['Analyze my portfolio', 'What should I buy?', 'Explain P/E ratio']
-        : ['Explain this simply', 'Give me an example', 'Quiz me'];
+        ? ['What is diversification?', 'Bull vs bear case for a stock', 'Explain P/E ratio simply']
+        : ['What is dollar-cost averaging?', 'Quiz me on ETFs', 'What makes a stock risky?'];
 
     return (
         <div className={styles.widget}>
@@ -69,6 +124,7 @@ export default function SnapseWidget() {
                 className={`${styles.toggleBtn} ${open ? styles.active : ''}`}
                 onClick={() => setOpen(!open)}
                 title="Open Snapse AI"
+                type="button"
             >
                 {open ? '✕' : '💬'}
             </button>
@@ -76,26 +132,47 @@ export default function SnapseWidget() {
             <div className={`${styles.panel} ${open ? styles.panelActive : ''}`}>
                 <div className={styles.header}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{
-                            width: '32px', height: '32px',
-                            background: 'linear-gradient(135deg, #4f6ef7, #9b5de5)',
-                            borderRadius: '8px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '14px',
-                        }}>S</div>
+                        <div
+                            style={{
+                                width: '32px',
+                                height: '32px',
+                                background: 'linear-gradient(135deg, #4f6ef7, #9b5de5)',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px',
+                            }}
+                        >
+                            S
+                        </div>
                         <div>
-                            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: 'var(--vt-text)' }}>Snapse</h3>
+                            <h3
+                                style={{
+                                    margin: 0,
+                                    fontSize: '14px',
+                                    fontWeight: 700,
+                                    color: 'white',
+                                }}
+                            >
+                                Snapse
+                            </h3>
                             <p style={{ margin: 0, fontSize: '11px', color: '#4f6ef7' }}>
-                                {isTrading ? 'Portfolio AI' : 'Learning Tutor'}
+                                {isTrading ? 'Investing coach' : 'Learning tutor'}
                             </p>
                         </div>
                     </div>
-                    <button className={styles.closeBtn} onClick={() => setOpen(false)}>✕</button>
+                    <button className={styles.closeBtn} onClick={() => setOpen(false)} type="button">
+                        ✕
+                    </button>
                 </div>
 
                 <div className={styles.messages}>
                     {messages.map((msg, i) => (
-                        <div key={i} className={`${styles.message} ${msg.role === 'user' ? styles.messageUser : styles.messageAssistant}`}>
+                        <div
+                            key={i}
+                            className={`${styles.message} ${msg.role === 'user' ? styles.messageUser : styles.messageAssistant}`}
+                        >
                             <div
                                 className={styles.bubble}
                                 dangerouslySetInnerHTML={{ __html: formatContent(msg.content) }}
@@ -106,7 +183,9 @@ export default function SnapseWidget() {
                         <div className={`${styles.message} ${styles.messageAssistant}`}>
                             <div className={styles.bubble}>
                                 <div className={styles.typingDots}>
-                                    <span></span><span></span><span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
                                 </div>
                             </div>
                         </div>
@@ -114,17 +193,22 @@ export default function SnapseWidget() {
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Quick prompts */}
                 {messages.length <= 1 && (
-                    <div style={{
-                        padding: '8px 12px',
-                        display: 'flex', flexWrap: 'wrap', gap: '6px',
-                        borderTop: '1px solid var(--vt-border2)',
-                    }}>
+                    <div
+                        style={{
+                            padding: '8px 12px',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '6px',
+                            borderTop: '1px solid var(--vt-border2)',
+                        }}
+                    >
                         {quickPrompts.map(p => (
                             <button
                                 key={p}
-                                onClick={() => { setInput(p); }}
+                                type="button"
+                                onClick={() => void sendMessageWithText(p)}
+                                disabled={loading}
                                 style={{
                                     padding: '5px 10px',
                                     background: 'rgba(79,110,247,0.1)',
@@ -132,24 +216,39 @@ export default function SnapseWidget() {
                                     borderRadius: '100px',
                                     color: '#7d9bff',
                                     fontSize: '11px',
-                                    cursor: 'pointer',
+                                    cursor: loading ? 'not-allowed' : 'pointer',
                                     fontFamily: 'Inter, sans-serif',
+                                    opacity: loading ? 0.6 : 1,
                                 }}
-                            >{p}</button>
+                            >
+                                {p}
+                            </button>
                         ))}
                     </div>
                 )}
 
                 <div className={styles.inputArea}>
-                    <input
-                        type="text"
+                    <textarea
                         value={input}
                         onChange={e => setInput(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                        placeholder="Ask me anything..."
+                        onKeyDown={e => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                void sendMessageWithText(input);
+                            }
+                        }}
+                        placeholder="Ask about investing… (Shift+Enter for new line)"
                         className={styles.input}
+                        rows={2}
+                        disabled={loading}
+                        aria-label="Message Snapse"
                     />
-                    <button className={styles.sendBtn} onClick={sendMessage} disabled={loading || !input.trim()}>
+                    <button
+                        className={styles.sendBtn}
+                        type="button"
+                        onClick={() => void sendMessageWithText(input)}
+                        disabled={loading || !input.trim()}
+                    >
                         ➤
                     </button>
                 </div>

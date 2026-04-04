@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation';
 import { LEVELS, type LessonUnit, type Level } from '@/lib/learningContent';
 import styles from './learn.module.css';
 import DashNav from '@/components/DashNav';
+import {
+    LessonHeader,
+    LessonTabs,
+    ConceptsTab,
+    VideoTab,
+    LessonContentWrapper,
+    type LessonViewTab,
+} from './LessonViewTabs';
 
 interface Progress {
     [key: string]: { completed: boolean; quizScore?: number; quizPassed?: boolean };
@@ -39,6 +47,7 @@ export default function LearningDashboard() {
     const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
     const [quizResult, setQuizResult] = useState<{ score: number; total: number; passed: boolean } | null>(null);
     const [progress, setProgress] = useState<Progress>({});
+    const [lessonTab, setLessonTab] = useState<LessonViewTab>('concepts');
     const router = useRouter();
 
     useEffect(() => {
@@ -198,13 +207,26 @@ export default function LearningDashboard() {
                                         </div>
                                     )}
                                 </div>
-                                <h2 className={styles.viewerTitle}>{activeUnit.title}</h2>
-                                <div className={styles.unitContent} dangerouslySetInnerHTML={{ __html: formatContent(activeUnit.content) }} />
-                                {activeUnit.quiz.length > 0 && (
-                                    <button className={styles.quizCta} onClick={startQuiz}>
-                                        Take the Quiz →
-                                    </button>
-                                )}
+                                <LessonHeader
+                                    title={activeUnit.title}
+                                    quizAvailable={activeUnit.quiz.length > 0}
+                                    onTakeQuiz={startQuiz}
+                                />
+                                <LessonTabs
+                                    active={lessonTab}
+                                    onChange={setLessonTab}
+                                    accentColor={activeUnitLevelObj.color}
+                                />
+                                <LessonContentWrapper>
+                                    {lessonTab === 'concepts' && (
+                                        <ConceptsTab>
+                                            <div className={styles.unitContent} dangerouslySetInnerHTML={{ __html: formatContent(activeUnit.content) }} />
+                                        </ConceptsTab>
+                                    )}
+                                    {lessonTab === 'video' && (
+                                        <VideoTab lessonTitle={activeUnit.title} />
+                                    )}
+                                </LessonContentWrapper>
                             </>
                         ) : (
                             <div className={styles.quizSection}>

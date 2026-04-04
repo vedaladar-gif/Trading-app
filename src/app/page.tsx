@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import VLogo from '@/components/VLogo';
+import NonProfitSection from '@/components/NonProfitSection';
 import { useMarketStatus } from '@/hooks/useMarketStatus';
 
 /* ── display helpers ─────────────────────────────────────── */
@@ -330,6 +331,9 @@ export default function Home() {
       <section className={styles.features}>
         <div className={styles.sectionLabel}>Everything you need</div>
         <h2 className={styles.sectionTitle}>Built for serious learners</h2>
+
+        <NonProfitSection />
+
         <div className={styles.featureGrid}>
           <div className={styles.featureItem}>
             <div className={`${styles.featureIcon} ${styles.iconBlue}`}>📊</div>
